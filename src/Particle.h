@@ -2,28 +2,46 @@
 #define PS_PARTICLE_H_
 
 #include "Vector2.h"
+#include "DoubleBuffered.h"
 
 class Particle {
 public:
     using QuantityType = float;
     using Vector2t = Vector2<QuantityType>;
 
-    explicit Particle(float radius):
-        m_radius(radius) {}
+    Particle(float radius, const Vector2t& position=Vector2t::zero()):
+        m_radius(radius), m_position(position), m_id(m_next_id++) 
+    {}
 
     ~Particle() = default;
 
-    Particle(const Particle& other) = delete;
-    Particle(Particle&& other) = default;
-    Particle& operator =(const Particle& other) = delete;
-    Particle& operator =(Particle&& other) = default;
+    Particle(const Particle& other) = default;
+    Particle(Particle&& other) noexcept = default;
+    Particle& operator =(const Particle& other) = default;
+    Particle& operator =(Particle&& other) noexcept = default;
 
-    const Vector2t& position() const {
-        return m_position;
+    void set_position(const Vector2t& position) {
+        m_position.broadcast(position);
     }
 
-    Vector2t& position() {
-        return m_position;
+    void update_position(const Vector2t& position) {
+        m_position.set(position);
+    }
+
+    void update_velocity(const Vector2t& velocity) {
+        m_velocity.set(velocity);
+    }
+
+    void apply_update() {
+        m_position.apply_update();
+    }
+
+    const Vector2t& position() const {
+        return m_position.get();
+    }
+
+    const Vector2t& velocity() const {
+        return m_velocity.get(); 
     }
 
     QuantityType radius() const {
@@ -34,9 +52,17 @@ public:
         m_radius = radius;
     }
 
+    int id() const {
+        return m_id;
+    }
+
 private:
     QuantityType m_radius;
-    Vector2t m_position = Vector2t(0, 0);
+    DoubleBuffered<Vector2t> m_position = Vector2t(0, 0);
+    DoubleBuffered<Vector2t> m_velocity = Vector2t(0, 0);
+    int m_id;
+
+    static int m_next_id;
 };
 
 #endif
