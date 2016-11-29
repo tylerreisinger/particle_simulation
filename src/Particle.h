@@ -1,11 +1,8 @@
 #ifndef PS_PARTICLE_H_
 #define PS_PARTICLE_H_
 
-#include <memory>
-
 #include "Vector2.h"
 #include "DoubleBuffered.h"
-#include "InteractionManager.h"
 #include "CommonTypes.h"
 
 class Particle {
@@ -79,8 +76,6 @@ private:
     QuantityType m_radius;
     QuantityType m_mass;
     int m_id;
-
-    std::shared_ptr<InteractionManager> m_interaction;
 
     static int m_next_id;
 };

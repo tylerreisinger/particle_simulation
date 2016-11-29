@@ -4,11 +4,11 @@
 #include <cassert>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #include "CommonTypes.h"
 #include "Vector2.h"
 #include "Particle.h"
-#include "ForceGridLayer.h"
 
 class GridParticle;
 
@@ -156,8 +156,6 @@ private:
 
     void apply_insert_list();
     void apply_delete_list();
-
-    std::vector<ForceGridLayer> m_forces;
 
     std::vector<GridCell> m_cells;
 

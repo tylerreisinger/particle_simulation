@@ -8,7 +8,6 @@
 #include "Particle.h"
 #include "Grid.h"
 #include "CommonTypes.h"
-#include "InteractionComponent.h"
 
 template <typename Rng>
 class PopulationBuilder {
@@ -72,8 +71,6 @@ private:
     std::function<Vector2<PositionType> (Rng&)> m_position_dist;
     std::function<Vector2<PositionType> (Rng&)> m_velocity_dist;
     std::function<QuantityType (Rng&)> m_mass_dist;
-    //std::function<std::unique_ptr<InteractionComponent> (const Particle&)> 
-    //    m_interaction_dist = nullptr;
 
     RngType m_rng;
     Grid* m_grid;
