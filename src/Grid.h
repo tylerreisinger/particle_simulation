@@ -8,6 +8,7 @@
 #include "CommonTypes.h"
 #include "Vector2.h"
 #include "Particle.h"
+#include "ForceGridLayer.h"
 
 class GridParticle;
 
@@ -16,7 +17,7 @@ public:
     using iterator = std::unordered_map<int, GridParticle*>::iterator;
     using const_iterator = std::unordered_map<int, GridParticle*>::const_iterator;
 
-    GridCell() = default;
+    GridCell(int x, int y, int idx);
     ~GridCell() = default;
 
     GridCell(const GridCell& other) = delete;
@@ -37,14 +38,21 @@ public:
         return m_particles.size();
     }
 
+    int grid_index() const {return m_idx;}
+
 private:
     std::unordered_map<int, GridParticle*> m_particles;    
+
+    int m_cell_x;
+    int m_cell_y;
+    int m_idx;
 };
 
 class GridParticle {
-    friend class Grid;
+    friend class GridCell;
 public:
     GridParticle(const Particle& particle);
+    GridParticle(Particle&& particle);
     ~GridParticle() = default;
 
     GridParticle(const GridParticle& other) = default;
@@ -54,6 +62,14 @@ public:
 
     int id() const {
         return m_particle.id();
+    }
+
+    SpatialVector position() const {
+        return m_particle.position();
+    }
+
+    SpatialVector velocity() const {
+        return m_particle.velocity();
     }
 
     Particle& particle() {
@@ -75,8 +91,9 @@ private:
 
 class Grid {
 public:
-    using iterator = std::unordered_map<int, GridParticle>::iterator;
-    using const_iterator = std::unordered_map<int, GridParticle>::iterator;
+    using ParticleContainer = std::unordered_map<int, std::unique_ptr<GridParticle>>;
+    using iterator = ParticleContainer::iterator;
+    using const_iterator = ParticleContainer::const_iterator;
 
     Grid(PositionType width, PositionType height, PositionType xres, PositionType yres);
 
@@ -87,6 +104,11 @@ public:
     Grid& operator =(const Grid& other) = delete;
     Grid& operator =(Grid&& other) noexcept = default;
 
+    iterator begin() {return m_particles.begin();}
+    iterator end() {return m_particles.end();}
+    const_iterator begin() const {return m_particles.begin();}
+    const_iterator end() const {return m_particles.end();}
+
     PositionType width() const {return m_width;}
     PositionType height() const {return m_height;}
     PositionType xres() const {return m_xres;}
@@ -94,7 +116,12 @@ public:
     PositionType dx() const {return m_dx;}
     PositionType dy() const {return m_dy;}
 
+    std::size_t num_particles() const {return m_particles.size();}
+
+    std::size_t num_cells() const {return m_cells.size();}
+
     void add(const Particle& particle);
+    void add(Particle&& particle);
 
     constexpr std::size_t position_to_cell(const SpatialVector& pos) const {
         auto x = static_cast<int>(pos.x / m_dx); 
@@ -105,30 +132,39 @@ public:
         assert(x >= 0);
         assert(y >= 0);
 
-        return x + y*m_width;
+        return x + y*m_xres;
+    }
+
+    bool is_point_within(const SpatialVector& pos) const {
+        return (pos.x >= 0 && pos.y >= 0 && pos.x < m_width && pos.y < m_height);
     }
 
     GridCell& cell(std::size_t x, std::size_t y);
     GridCell& cell(std::size_t idx);
 
     void next_frame();
+    void update_particle(GridParticle& particle);
 
     std::ostream& print_particle_density(std::ostream& stream, int level=0) const;
 
 private:
     iterator insert(const Particle& m_particle);
-    iterator insert(GridParticle&& m_particle);
+    iterator insert(Particle&& particle);
+    iterator insert(std::unique_ptr<GridParticle> m_particle);
     void remove_from_grid(GridParticle& m_particle);
+    void update_forces();
 
     void apply_insert_list();
     void apply_delete_list();
 
+    std::vector<ForceGridLayer> m_forces;
+
     std::vector<GridCell> m_cells;
 
-    std::unordered_map<int, GridParticle> m_particles;
+    std::unordered_map<int, std::unique_ptr<GridParticle>> m_particles;
 
     std::vector<GridParticle*> m_deleteList;
-    std::vector<GridParticle> m_insertList;
+    std::vector<std::unique_ptr<GridParticle>> m_insertList;
 
     void build_grid();
 

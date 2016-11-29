@@ -18,6 +18,7 @@ public:
     DoubleBuffered& operator =(const T& other);
 
     const T& get() const {return m_front;}
+    const T& get_updated_value() const {return m_back;}
     void set(const T& value);
     void set(T&& value);
     void broadcast(const T& value);

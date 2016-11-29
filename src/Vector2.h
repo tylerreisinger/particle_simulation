@@ -40,6 +40,8 @@ public:
     constexpr T magnitude_squared() const;
     T magnitude() const;
 
+    Vector2<T> to_unit() const;
+
     Radians<T> angle_from_x_axis() const;
 
     template<typename U>
@@ -189,23 +191,29 @@ inline T Vector2<T>::magnitude() const
 }
  
 template<typename T>
+inline Vector2<T> Vector2<T>::to_unit() const
+{
+    auto mag = magnitude();
+    return Vector2<T>(x/mag, y/mag);
+}
+ 
+template<typename T>
 inline Radians<T> Vector2<T>::angle_from_x_axis() const
 {
     using std::atan2;
     return Radians<T>(atan2(y, x));
 }
 
-template<typename T, template <typename> class XDist, 
-    template <typename> class YDist>
+template<typename T, typename XDist, typename YDist>
 class Vector2Distribution {
 public:
-    Vector2Distribution(const XDist<T>& x_distribution, const YDist<T>& y_distribution):
+    Vector2Distribution(const XDist& x_distribution, const YDist& y_distribution):
         m_x_dist(x_distribution), m_y_dist(y_distribution) {
     }
 
-    Vector2Distribution(XDist<T>&& x_distribution, YDist<T>&& y_distribution):
-        m_x_dist(std::forward<XDist<T>>(x_distribution)), 
-        m_y_dist(std::forward<YDist<T>>(y_distribution)) {
+    Vector2Distribution(XDist&& x_distribution, YDist&& y_distribution):
+        m_x_dist(std::forward<XDist>(x_distribution)), 
+        m_y_dist(std::forward<YDist>(y_distribution)) {
     }
 
     ~Vector2Distribution() = default;
@@ -233,36 +241,48 @@ public:
         return Vector2<T>(m_x_dist(rng), m_y_dist(rng));
     }
 
-    XDist<T>& x_distribution() {
+    XDist& x_distribution() {
         return m_x_dist;
     }
 
-    const XDist<T>& x_distribution() const {
+    const XDist& x_distribution() const {
         return m_x_dist;
     }
 
-    YDist<T>& y_distribution() {
+    YDist& y_distribution() {
         return m_y_dist;
     }
 
-    const YDist<T>& y_distribution() const {
+    const YDist& y_distribution() const {
         return m_y_dist;
     }
 
 private:
-    XDist<T> m_x_dist;
-    YDist<T> m_y_dist;
+    XDist m_x_dist;
+    YDist m_y_dist;
 };
 
 template<typename T, template<typename> class XDist, 
     template <typename> class YDist>
 auto make_vector2_distribution(XDist<T>&& x_distribution, YDist<T>&& y_distribution) {
-    return Vector2Distribution<T, XDist, YDist>(std::forward<XDist<T>>(x_distribution),
+    return Vector2Distribution<T, XDist<T>, YDist<T>>(std::forward<XDist<T>>(x_distribution),
             std::forward<YDist<T>>(y_distribution));
+}
+
+template<typename T, typename XDist, typename YDist>
+auto make_vector2_distribution(XDist&& x_distribution, YDist&& y_distribution) {
+    return Vector2Distribution<T, XDist, YDist>(std::forward<XDist>(x_distribution),
+            std::forward<YDist>(y_distribution));
 }
 
 template<typename T, template<typename> class Dist>
 auto make_vector2_distribution(const Dist<T>& component_distribution) {
+    return Vector2Distribution<T, Dist<T>, Dist<T>>(component_distribution, 
+            component_distribution);
+}
+
+template<typename T, typename Dist>
+auto make_vector2_distribution(const Dist& component_distribution) {
     return Vector2Distribution<T, Dist, Dist>(component_distribution, 
             component_distribution);
 }

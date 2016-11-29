@@ -2,122 +2,100 @@
 #define PS_INITIALIZATION_H_
 
 #include <random>
+#include <functional>
 
 #include "Vector2.h"
 #include "Particle.h"
 #include "Grid.h"
+#include "CommonTypes.h"
+#include "InteractionComponent.h"
 
-template<typename Rng,
-    typename Dist1,
-    typename Dist2,
-    typename Dist3
-    >
-void populate_grid(Rng& rng, std::size_t num_particles, Grid& grid,
-        Dist1&& position_distribution, 
-        Dist2&& velocity_distribution,
-        Dist3&& radius_distribution 
-        ) {
-    for(std::size_t i = 0; i < num_particles; ++i) {
-        Particle p(radius_distribution(rng));
-        p.update_position(position_distribution(rng));
-        p.update_velocity(velocity_distribution(rng));
-
-        p.apply_update();
-
-        grid.add(p);
-    }
-
-    grid.next_frame();
-}
-
-template<typename T>
-class GridBuilderValue {
+template <typename Rng>
+class PopulationBuilder {
 public:
-    GridBuilderValue() = default;
-    GridBuilderValue(const T& value):
-        value(value) {}
-
-    constexpr bool has_value() const {return true;}
-    T value;
-};
-
-template<>
-class GridBuilderValue<void> {
-public:
-    GridBuilderValue() = default;
-    constexpr bool has_value() const {return false;}
-};
-
-template<typename PDist, typename VDist, typename RDist>
-class GridBuilder {
-public:
-    GridBuilder() = default;
-
-    GridBuilder(const PDist& position_distribution,
-            const VDist& velocity_distribution,
-            const RDist& radius_distribution):
-        m_position_dist(position_distribution),
-        m_velocity_dist(velocity_distribution),
-        m_radius_dist(radius_distribution)
-    {}
-
-    ~GridBuilder() = default;
-
-    GridBuilder(const GridBuilder& other) = default;
-    GridBuilder(GridBuilder&& other) noexcept = default;
-    GridBuilder& operator =(const GridBuilder& other) = default;
-    GridBuilder& operator =(GridBuilder&& other) noexcept = default;
-
-    template<typename T>
-    GridBuilder<T, VDist, RDist> set_position_distribution(T&& dist) {
-        return GridBuilder<std::remove_cv_t<T>, VDist, RDist>(
-            std::forward<std::remove_cv_t<T>>(dist), std::move(m_velocity_dist.value), 
-            std::move(m_radius_dist.value));
+    using RngType = std::remove_reference_t<Rng>;
+    PopulationBuilder(Rng& rng, Grid& grid):
+        m_rng(rng), m_grid(&grid)
+    {
+        set_defaults(grid);
     }
 
-    template<typename T>
-    GridBuilder<PDist, T, RDist> set_velocity_distribution(T&& dist) {
-        return GridBuilder<PDist, T, RDist>(
-            std::move(m_position_dist.value), std::forward<T>(dist), 
-            std::move(m_radius_dist.value));
-    }
-    
-    template<typename T>
-    GridBuilder<PDist, VDist, T> set_radius_distribution(T&& dist) {
-        return GridBuilder<PDist, VDist, T>(
-            std::move(m_position_dist.value), std::move(m_velocity_dist.value), 
-            std::forward<T>(dist));
+    ~PopulationBuilder() = default;
+
+    PopulationBuilder(const PopulationBuilder& other) = delete;
+    PopulationBuilder(PopulationBuilder&& other) = default;
+    PopulationBuilder& operator =(const PopulationBuilder& other) = delete;
+    PopulationBuilder& operator =(PopulationBuilder&& other) = default;
+
+    template <typename Fn>
+    PopulationBuilder&& set_position_distribution(Fn&& dist) {
+        m_position_dist = std::forward<Fn>(dist);
+        return std::move(*this);
     }
 
-    template<typename Rng>
-    void execute(Rng& rng, std::size_t num_particles, Grid& grid) {
-        populate_grid(rng, num_particles, grid, m_position_dist.value,
-            m_velocity_dist.value, m_radius_dist.value);    
+    template <typename Fn>
+    PopulationBuilder&& set_velocity_distribution(Fn&& dist) {
+        m_velocity_dist = std::forward<Fn>(dist);
+        return std::move(*this);
     }
 
+    template <typename Fn>
+    PopulationBuilder&& set_radius_distribution(Fn&& dist) {
+        m_radius_dist = std::forward<Fn>(dist);
+        return std::move(*this);
+    }
+
+    template <typename Fn>
+    PopulationBuilder&& set_mass_distribution(Fn&& dist) {
+        m_mass_dist = std::forward<Fn>(dist);
+        return std::move(*this);
+    }
+
+    PopulationBuilder&& execute(std::size_t num_particles) {
+ 
+        for(std::size_t n = 0; n < num_particles; ++n) {
+            Particle p(m_radius_dist(m_rng), m_mass_dist(m_rng), m_position_dist(m_rng));
+            p.update_velocity(m_velocity_dist(m_rng));
+            p.apply_update();
+            m_grid->add(std::move(p));
+        }
+        m_grid->next_frame();
+
+        return std::move(*this);
+    }
 
 private:
-    GridBuilderValue<PDist> m_position_dist;
-    GridBuilderValue<VDist> m_velocity_dist;
-    GridBuilderValue<RDist> m_radius_dist;
+
+    void set_defaults(const Grid& grid);
+
+    std::function<PositionType (Rng&)> m_radius_dist;
+    std::function<Vector2<PositionType> (Rng&)> m_position_dist;
+    std::function<Vector2<PositionType> (Rng&)> m_velocity_dist;
+    std::function<QuantityType (Rng&)> m_mass_dist;
+    //std::function<std::unique_ptr<InteractionComponent> (const Particle&)> 
+    //    m_interaction_dist = nullptr;
+
+    RngType m_rng;
+    Grid* m_grid;
 };
 
-template<typename PDist, typename VDist, typename RDist>
-auto make_population_builder(const PDist& pdist, const VDist& vdist, const RDist& rdist) {
-    return GridBuilder<PDist, VDist, RDist>(pdist, vdist, rdist);
+template <typename Rng>
+PopulationBuilder<Rng> make_population_builder(Rng&& rng, Grid& grid) {
+    auto bd = PopulationBuilder<Rng>(std::forward<Rng>(rng), grid);
+    return bd;
 }
 
-auto make_population_builder(const Grid& grid) {
-    return make_population_builder(
-        make_vector2_distribution(
-            std::uniform_real_distribution<PositionType>(0.0, grid.width()),
-            std::uniform_real_distribution<PositionType>(0.0, grid.height())
-            ),
-        make_vector2_distribution(
-            std::uniform_real_distribution<PositionType>(0.0, 0.0)
-            ),
-        std::uniform_real_distribution<PositionType>(1.0, 2.0)
-    );
+template <typename Rng>
+void PopulationBuilder<Rng>::set_defaults(const Grid& grid) {
+    m_position_dist = make_vector2_distribution(
+        std::uniform_real_distribution<PositionType>(0.0, grid.width()),
+        std::uniform_real_distribution<PositionType>(0.0, grid.height()));
+
+    m_velocity_dist = [](Rng& rng) {return Vector2<PositionType>(0.0, 0.0);};
+
+    m_radius_dist = std::uniform_real_distribution<PositionType>(1.0, 2.0);
+
+    m_mass_dist = [](Rng& rng) {return 1.0;};
 }
 
 #endif
