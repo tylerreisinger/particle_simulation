@@ -5,17 +5,20 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <list>
 
 #include "CommonTypes.h"
 #include "Vector2.h"
 #include "Particle.h"
+#include "IntrusiveList.h"
 
 class GridParticle;
 
 class GridCell {
 public:
-    using iterator = std::unordered_map<int, GridParticle*>::iterator;
-    using const_iterator = std::unordered_map<int, GridParticle*>::const_iterator;
+    using ParticleContainer = IntrusiveList<GridParticle>;
+    using iterator = ParticleContainer::iterator;
+    using const_iterator = ParticleContainer::const_iterator;
 
     GridCell(int x, int y, int idx);
     ~GridCell() = default;
@@ -41,14 +44,14 @@ public:
     int grid_index() const {return m_idx;}
 
 private:
-    std::unordered_map<int, GridParticle*> m_particles;    
+    ParticleContainer m_particles;
 
     int m_cell_x;
     int m_cell_y;
     int m_idx;
 };
 
-class GridParticle {
+class GridParticle: public IntrusiveListHook<GridParticle> {
     friend class GridCell;
 public:
     GridParticle(const Particle& particle);

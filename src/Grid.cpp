@@ -115,9 +115,7 @@ void Grid::build_grid() {
  
 GridCell::iterator GridCell::insert(GridParticle* particle) {
     particle->m_owning_cell = this;
-    auto result = m_particles.insert(std::make_pair(particle->id(), particle));
-    assert(result.second);
-    return result.first;
+    return m_particles.push_back(particle);
 }
 
 GridCell::GridCell(int x, int y, int idx):
@@ -126,7 +124,7 @@ GridCell::GridCell(int x, int y, int idx):
 }
  
 void GridCell::remove(GridParticle& particle) {
-    m_particles.erase(particle.id());
+    m_particles.erase(particle);
 }
  
  

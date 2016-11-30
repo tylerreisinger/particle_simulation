@@ -15,7 +15,7 @@ void Simulation::do_frame() {
     for(int i = 0; i < m_grid.num_cells(); ++i) {
         auto& cell = m_grid.cell(i);
         for(auto& item : cell) {
-            auto& particle = *item.second;
+            auto& particle = item;
             advance_physics(particle.particle(), m_simulation_time.time_delta(), 
                     SpatialVector::zero());
             /*std::cout << "Pos: " << particle.position() << "->" 
