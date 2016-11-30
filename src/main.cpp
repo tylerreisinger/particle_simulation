@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
         .set_velocity_distribution(
             make_vector2_distribution(std::uniform_real_distribution<float>(-1.0, 1.0))
         )
-        .execute(1000);
+        .execute(3);
 
     grid.print_particle_density(std::cout, 0);
 
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     for(int i = 0; i < 2500; ++i) {
         s.do_frame();
         s.get_particles().print_particle_density(std::cout, 0);
-        //std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
     }
 
     return 0;

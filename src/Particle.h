@@ -41,17 +41,26 @@ public:
     const Vector2t& position() const {
         return m_position.get();
     }
-
     const Vector2t& next_position() const {
         return m_position.get_updated_value();
     }
-
+    Vector2t& next_position() {
+        return m_position.get_updated_value();
+    }
+    void reset_position() {
+        m_position.reset();
+    }
     const Vector2t& velocity() const {
         return m_velocity.get(); 
     }
-
     const Vector2t& next_velocity() const {
         return m_velocity.get_updated_value(); 
+    }
+    Vector2t& next_velocity() {
+        return m_velocity.get_updated_value(); 
+    }
+    void reset_velocity() {
+        m_velocity.reset();
     }
 
     QuantityType radius() const {

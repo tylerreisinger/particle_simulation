@@ -66,13 +66,17 @@ public:
     int id() const {
         return m_particle.id();
     }
-
     SpatialVector position() const {
         return m_particle.position();
     }
-
     SpatialVector velocity() const {
         return m_particle.velocity();
+    }
+    SpatialVector next_position() const {
+        return m_particle.next_position();
+    }
+    SpatialVector next_velocity() const {
+        return m_particle.next_velocity();
     }
 
     Particle& particle() {

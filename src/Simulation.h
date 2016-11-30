@@ -27,7 +27,10 @@ public:
     }
    
 private: 
-    void on_particle_out_of_boundry(Particle& particle);
+    void on_particle_out_of_boundry(Particle& particle, SpatialVector& acceleration);
+    void resolve_border_collision(Particle& particle, SpatialVector& acceleration);
+    void resolve_border_collision_recursive(Particle& particle, 
+            double& remaining_time, SpatialVector& acceleration);
 
     void advance_physics(Particle& particle, double dt, SpatialVector acceleration);
     void euler(Particle& particle, double dt, SpatialVector acceleration);

@@ -19,8 +19,10 @@ public:
 
     const T& get() const {return m_front;}
     const T& get_updated_value() const {return m_back;}
+    T& get_updated_value() {return m_back;}
     void set(const T& value);
     void set(T&& value);
+    void reset() {m_back = m_front;}
     void broadcast(const T& value);
 
     void apply_update();
