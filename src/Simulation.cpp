@@ -18,11 +18,6 @@ void Simulation::do_frame() {
             auto& particle = item;
             advance_physics(particle.particle(), m_simulation_time.time_delta(), 
                     SpatialVector::zero());
-            /*std::cout << "Pos: " << particle.position() << "->" 
-                << particle.particle().next_position() << "; Vel: " 
-                << particle.velocity() << "->" << particle.particle().next_velocity()
-                << " -- " << particle.containing_cell()->grid_index()
-                << "\n";*/
         }
     }
     m_grid.next_frame();
@@ -34,7 +29,6 @@ void Simulation::do_frame() {
 void Simulation::on_particle_out_of_boundry(Particle& particle,
         SpatialVector& acceleration) {
 
-    std::cout << "Particle " << particle.id() << " out of bounds.\n";
     resolve_border_collision(particle,acceleration);
 }
 
@@ -46,7 +40,6 @@ void Simulation::resolve_border_collision(Particle& particle,
 
     if(remaining_time > 0) {
         euler(particle, remaining_time, acceleration);
-        std::cout << "Finishing remaining simulation. \n";
     }
 }
 

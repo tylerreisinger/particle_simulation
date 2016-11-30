@@ -11,9 +11,10 @@ GridParticle::GridParticle(Particle&& particle):
     m_particle(std::move(particle)) 
 {} 
  
-Grid::Grid(PositionType width, PositionType height, PositionType xres, PositionType yres):
+Grid::Grid(PositionType width, PositionType height, int xres, int yres):
     m_width(width), m_height(height), m_xres(xres), m_yres(yres), 
-    m_dx(width / xres), m_dy(height / yres)
+    m_dx(width / xres), m_dy(height / yres), m_1_over_dx(1.0 / m_dx), 
+    m_1_over_dy(1.0 / m_dy)
 {
     build_grid(); 
 }
@@ -65,13 +66,11 @@ void Grid::next_frame() {
 }
  
 void Grid::update_particle(GridParticle& particle) {
-    auto cell_idx = position_to_cell(particle.particle().next_position());
-    auto cell = particle.containing_cell();
-    if(cell_idx != cell->grid_index()) {
-        /*std::cout << 
-            cell->grid_index() << " -> " << cell_idx << std::endl;*/
-        cell->remove(particle); 
-        this->cell(cell_idx).insert(&particle);
+    auto new_cell_idx = position_to_cell(particle.next_position());
+    auto current_cell = particle.containing_cell();
+    if(new_cell_idx != current_cell->grid_index()) {
+        auto& new_cell = cell(new_cell_idx);
+        new_cell.splice(*current_cell, &particle);
     }
 }
  
@@ -86,7 +85,7 @@ std::ostream& Grid::print_particle_density(std::ostream& stream, int level) cons
 }
  
 void Grid::remove_from_grid(GridParticle& item) {
-    item.containing_cell()->remove(item);
+    item.containing_cell()->remove(&item);
     m_particles.erase(item.id()); 
 }
  
@@ -123,8 +122,13 @@ GridCell::GridCell(int x, int y, int idx):
  
 }
  
-void GridCell::remove(GridParticle& particle) {
+void GridCell::remove(GridParticle* particle) {
     m_particles.erase(particle);
 }
  
+ 
+GridCell::iterator GridCell::splice(GridCell& old_cell, GridParticle* particle) {
+    particle->m_owning_cell = this;
+    return m_particles.splice_back(old_cell.m_particles, particle); 
+}
  

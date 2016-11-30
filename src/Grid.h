@@ -35,7 +35,9 @@ public:
 
     iterator insert(GridParticle* particle);
 
-    void remove(GridParticle& particle);
+    void remove(GridParticle* particle);
+
+    iterator splice(GridCell& old_cell, GridParticle* particle);
 
     std::size_t size() const {
         return m_particles.size();
@@ -58,9 +60,9 @@ public:
     GridParticle(Particle&& particle);
     ~GridParticle() = default;
 
-    GridParticle(const GridParticle& other) = default;
+    GridParticle(const GridParticle& other) = delete;
     GridParticle(GridParticle&& other) noexcept = default;
-    GridParticle& operator =(const GridParticle& other) = default;
+    GridParticle& operator =(const GridParticle& other) = delete;
     GridParticle& operator =(GridParticle&& other) noexcept = default;
 
     int id() const {
@@ -102,7 +104,7 @@ public:
     using iterator = ParticleContainer::iterator;
     using const_iterator = ParticleContainer::const_iterator;
 
-    Grid(PositionType width, PositionType height, PositionType xres, PositionType yres);
+    Grid(PositionType width, PositionType height, int xres, int yres);
 
     ~Grid() = default;
 
@@ -131,8 +133,8 @@ public:
     void add(Particle&& particle);
 
     constexpr std::size_t position_to_cell(const SpatialVector& pos) const {
-        auto x = static_cast<int>(pos.x / m_dx); 
-        auto y = static_cast<int>(pos.y / m_dy);
+        auto x = static_cast<int>(pos.x * m_1_over_dx); 
+        auto y = static_cast<int>(pos.y * m_1_over_dy);
 
         assert(x < m_xres);
         assert(y < m_yres);
@@ -175,10 +177,12 @@ private:
 
     PositionType m_width;
     PositionType m_height;
-    PositionType m_xres;
-    PositionType m_yres;
+    int m_xres;
+    int m_yres;
     PositionType m_dx;
     PositionType m_dy;
+    PositionType m_1_over_dx;
+    PositionType m_1_over_dy;
 };
 
 #endif

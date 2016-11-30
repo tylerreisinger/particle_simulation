@@ -204,10 +204,15 @@ public:
     iterator erase(T* item);
     iterator erase(T& item);
 
+    iterator splice_back(IntrusiveList<T>& from_list, T* from);
+
     void clear();
 
 
 private: 
+    //Removes an item from the list but does not change item pointers.
+    void remove_from_list(T* from);
+
     T* m_head = nullptr;
     T* m_tail = nullptr;
     size_type m_size = 0;
@@ -246,27 +251,24 @@ inline typename IntrusiveList<T>::iterator IntrusiveList<T>::erase(iterator pos)
  
 template<typename T>
 inline typename IntrusiveList<T>::iterator IntrusiveList<T>::erase(T* item) {
-    auto prev_item = item->prev();
-    auto next_item = item->next();
-    if(prev_item != nullptr) {
-        prev_item->set_next(next_item);
-    } else {
-        m_head = next_item;
-    }
-    if(next_item != nullptr) {
-        next_item->set_prev(prev_item);
-    } else {
-        m_tail = prev_item;
-    }
-    m_size -= 1;
+    remove_from_list(item);
+
     item->set_next(nullptr);
     item->set_prev(nullptr);
-    return iterator(next_item);
+    return iterator(item->next());
 }
  
 template<typename T>
 inline typename IntrusiveList<T>::iterator IntrusiveList<T>::erase(T& item) {
     return erase(&item); 
+}
+ 
+template<typename T>
+inline typename IntrusiveList<T>::iterator 
+        IntrusiveList<T>::splice_back(IntrusiveList<T>& from_list, T* item) {
+
+    from_list.remove_from_list(item);
+    return push_back(item);
 }
  
 template<typename T>
@@ -290,17 +292,36 @@ inline typename IntrusiveList<T>::iterator
  
 template<typename T>
 inline typename IntrusiveList<T>::iterator IntrusiveList<T>::push_back(T* item) {
+
+    item->set_prev(m_tail);
+    item->set_next(nullptr);
+
     if(m_tail != nullptr) {
         m_tail->set_next(item);
     } else {
         m_head = item;
     }
 
-    item->set_prev(m_tail);
-    item->set_next(nullptr);
     m_tail = item; 
     m_size += 1;
     return iterator(item);
 }
 
+template<typename T>
+inline void IntrusiveList<T>::remove_from_list(T* item) {
+    auto prev_item = item->prev();
+    auto next_item = item->next();
+    if(prev_item != nullptr) {
+        prev_item->set_next(next_item);
+    } else {
+        m_head = next_item;
+    }
+    if(next_item != nullptr) {
+        next_item->set_prev(prev_item);
+    } else {
+        m_tail = prev_item;
+    }
+    m_size -= 1;
+}
+ 
 #endif
