@@ -1,6 +1,7 @@
 #include <iostream>
 #include <thread>
 
+#include "CommonTypes.h"
 #include "Simulation.h"
 #include "World.h"
 #include "Grid.h"
@@ -16,12 +17,12 @@ int main(int argc, char** argv) {
     auto bd = make_population_builder(rng, grid)
         .set_position_distribution(
             make_vector2_distribution(
-                std::uniform_real_distribution<float>(0.0, 5.0))
+                std::uniform_real_distribution<QuantityType>(0.0, 5.0))
         )
         .set_velocity_distribution(
-            make_vector2_distribution(std::uniform_real_distribution<float>(-1.0, 1.0))
+            make_vector2_distribution(std::uniform_real_distribution<QuantityType>(-1.0, 1.0))
         )
-        .execute(3000);
+        .execute(1000);
 
     grid.print_particle_density(std::cout, 0);
 
