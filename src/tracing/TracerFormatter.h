@@ -2,6 +2,7 @@
 #define PS_TRACERFORMATTER_H_
 
 #include <functional>
+#include <boost/optional.hpp>
 
 #include "TraceEvent.h"
 
@@ -18,7 +19,7 @@ public:
     TracerFormatter& operator =(const TracerFormatter& other) = delete;
     TracerFormatter& operator =(TracerFormatter&& other) noexcept = default;
 
-    virtual RecordFormat format_record(TraceEvent& event) = 0;
+    virtual boost::optional<RecordFormat> format_record(TraceEvent& event) = 0;
 };
 
 class TextTracerFormatter: public TracerFormatter<std::string>,
@@ -29,7 +30,7 @@ public:
     TextTracerFormatter() {};
     virtual ~TextTracerFormatter() {};
 
-    virtual std::string format_record(TraceEvent& event) override;
+    virtual boost::optional<std::string> format_record(TraceEvent& event) override;
 
     virtual void visit(TraceEvent& event) override;
     virtual void visit(ParticleTraceEvent& event) override;

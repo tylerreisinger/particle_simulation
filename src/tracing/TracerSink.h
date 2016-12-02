@@ -60,8 +60,10 @@ inline void TracerSink<RecordType>::emit_record(TraceEvent& event) {
     assert(m_backend != nullptr && "Tracer sink needs a valid backend");
 
     if(m_filter->filter(event)) {
-        RecordType formatted_record = m_formatter->format_record(event);
-        m_backend->emit_record(formatted_record);
+        auto formatted_record = m_formatter->format_record(event);
+        if(formatted_record) {
+            m_backend->emit_record(formatted_record.value());
+        }
     } 
 }
  

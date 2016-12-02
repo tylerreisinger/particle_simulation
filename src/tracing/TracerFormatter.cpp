@@ -4,9 +4,13 @@
 
 namespace tracing {
 
-std::string TextTracerFormatter::format_record(TraceEvent& event) {
+boost::optional<std::string> TextTracerFormatter::format_record(TraceEvent& event) {
     event.accept(*this); 
-    return m_record;
+    if(!m_record.empty()) {
+        return m_record;
+    } else {
+        return boost::none;
+    }
 }
  
 void TextTracerFormatter::visit(TraceEvent& event) {
