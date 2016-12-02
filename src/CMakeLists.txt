@@ -5,3 +5,16 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Simulation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SimulationTime.cpp
     PARENT_SCOPE)
+
+if(ENABLE_TRACING)
+    set(TRACING_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/TracerConfig.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tracing/Tracer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tracing/TraceEvent.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tracing/TracerFilter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tracing/TracerFormatter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tracing/TracerSinkBackend.cpp
+    PARENT_SCOPE)
+else()
+    set(TRACING_SOURCES PARENT_SCOPE)
+endif()

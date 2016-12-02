@@ -4,6 +4,10 @@ project(ParticleSwarmTextureGeneration)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 include_directories("src")
 
+if(ENABLE_TRACING)
+    add_definitions(-DTRACING)
+endif()
+
 list(APPEND CMAKE_CXX_FLAGS "-std=c++14")
 
-add_executable(pstg ${SOURCES})
+add_executable(pstg ${SOURCES} ${TRACING_SOURCES})

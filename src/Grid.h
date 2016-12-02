@@ -151,6 +151,13 @@ public:
     GridCell& cell(std::size_t x, std::size_t y);
     GridCell& cell(std::size_t idx);
 
+    Particle& get_particle_by_id(int id) {
+        return m_particles.at(id)->particle();
+    }
+    const Particle& get_particle_by_id(int id) const {
+        return m_particles.at(id)->particle();
+    }
+
     void next_frame();
     void update_particle(GridParticle& particle);
 

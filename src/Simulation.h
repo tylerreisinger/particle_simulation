@@ -4,6 +4,8 @@
 #include "Grid.h"
 #include "SimulationTime.h"
 
+#include "tracing/Tracer.h"
+
 class Simulation {
 public:
     using SpatialContainer = Grid;
@@ -27,6 +29,10 @@ public:
     }
    
 private: 
+#ifdef TRACING
+    void setup_tracing();
+#endif
+
     void on_particle_out_of_boundry(Particle& particle, SpatialVector& acceleration);
     void resolve_border_collision(Particle& particle, SpatialVector& acceleration);
     void resolve_border_collision_recursive(Particle& particle, 
@@ -34,10 +40,16 @@ private:
 
     void advance_physics(Particle& particle, double dt, SpatialVector acceleration);
     void euler(Particle& particle, double dt, SpatialVector acceleration);
+    void euler(const Particle& particle, double dt, SpatialVector acceleration,
+            SpatialVector& position, SpatialVector& velocity);
     //void runge_kutta4(Particle& particle, double dt, SpatialVector acceleration);
 
     SpatialContainer m_grid;        
     SimulationTime m_simulation_time;
+
+#ifdef TRACING
+    tracing::Tracer m_tracer;
+#endif
 };
 
 #endif

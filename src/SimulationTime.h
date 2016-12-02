@@ -13,9 +13,9 @@ public:
     SimulationTime();
     ~SimulationTime() = default;
 
-    SimulationTime(const SimulationTime& other) = delete;
+    SimulationTime(const SimulationTime& other) = default;
     SimulationTime(SimulationTime&& other) noexcept = default;
-    SimulationTime& operator =(const SimulationTime& other) = delete;
+    SimulationTime& operator =(const SimulationTime& other) = default;
     SimulationTime& operator =(SimulationTime&& other) noexcept = default;
 
     void begin_frame(TimeType timestep);
