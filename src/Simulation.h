@@ -42,7 +42,6 @@ private:
     void euler(Particle& particle, double dt, SpatialVector acceleration);
     void euler(const Particle& particle, double dt, SpatialVector acceleration,
             SpatialVector& position, SpatialVector& velocity);
-    //void runge_kutta4(Particle& particle, double dt, SpatialVector acceleration);
 
     SpatialContainer m_grid;        
     SimulationTime m_simulation_time;
