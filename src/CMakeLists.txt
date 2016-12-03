@@ -2,6 +2,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Grid.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Particle.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/PrototypalInteractionFactory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Simulation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SimulationTime.cpp
     PARENT_SCOPE)

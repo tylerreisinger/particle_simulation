@@ -38,6 +38,10 @@ private:
     void resolve_border_collision_recursive(Particle& particle, 
             double& remaining_time, SpatialVector& acceleration);
 
+    ForceType compute_exact_force(const Particle& particle);
+    ForceType compute_acceleration_from_force(const Particle& particle, 
+            const ForceType& force) const;
+
     void advance_physics(Particle& particle, double dt, SpatialVector acceleration);
     void euler(Particle& particle, double dt, SpatialVector acceleration);
     void euler(const Particle& particle, double dt, SpatialVector acceleration,

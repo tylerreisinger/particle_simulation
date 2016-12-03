@@ -56,7 +56,7 @@ private:
 class GridParticle: public IntrusiveListHook<GridParticle> {
     friend class GridCell;
 public:
-    GridParticle(const Particle& particle);
+    //GridParticle(const Particle& particle);
     GridParticle(Particle&& particle);
     ~GridParticle() = default;
 
@@ -129,7 +129,6 @@ public:
 
     std::size_t num_cells() const {return m_cells.size();}
 
-    void add(const Particle& particle);
     void add(Particle&& particle);
 
     constexpr std::size_t position_to_cell(const SpatialVector& pos) const {

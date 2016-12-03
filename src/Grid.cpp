@@ -3,9 +3,9 @@
 #include <iostream>
 #include <cassert>
 
-GridParticle::GridParticle(const Particle& particle):
+/*GridParticle::GridParticle(const Particle& particle):
     m_particle(particle)
-{}
+{}*/
 
 GridParticle::GridParticle(Particle&& particle):
     m_particle(std::move(particle)) 
@@ -19,9 +19,9 @@ Grid::Grid(PositionType width, PositionType height, int xres, int yres):
     build_grid(); 
 }
  
-Grid::iterator Grid::insert(const Particle& particle) {
+/*Grid::iterator Grid::insert(const Particle& particle) {
     return insert(std::make_unique<GridParticle>(particle));
-}
+}*/
 
 Grid::iterator Grid::insert(Particle&& particle) {
     return insert(std::make_unique<GridParticle>(std::move(particle)));
@@ -38,9 +38,9 @@ Grid::iterator Grid::insert(std::unique_ptr<GridParticle> p) {
     return it.first;
 }
  
-void Grid::add(const Particle& particle) {
+/*void Grid::add(const Particle& particle) {
     m_insertList.emplace_back(std::make_unique<GridParticle>(particle)); 
-}
+}*/
  
 void Grid::add(Particle&& particle) {
     m_insertList.emplace_back(std::make_unique<GridParticle>(std::move(particle))); 

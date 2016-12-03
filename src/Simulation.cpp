@@ -22,7 +22,7 @@ Simulation::Simulation(SpatialContainer&& grid):
 }
  
 void Simulation::do_frame() {
-    m_simulation_time.begin_frame(1.0);
+    m_simulation_time.begin_frame(0.1);
 
     std::cout << "===== Frame Start: t=" << m_simulation_time.current_simulation_time()
         << " =====\n";
@@ -33,10 +33,15 @@ void Simulation::do_frame() {
         auto& cell = m_grid.cell(i);
         for(auto& item : cell) {
             auto& particle = item;
+
+            auto acceleration = compute_acceleration_from_force(particle.particle(),
+                    compute_exact_force(particle.particle()));
+
             advance_physics(particle.particle(), m_simulation_time.time_delta(), 
-                    SpatialVector::zero());
+                    acceleration);
         }
     }
+
     m_grid.next_frame();
     for(auto& particle : m_grid) {
         m_grid.update_particle(*particle.second);
@@ -130,6 +135,23 @@ void Simulation::resolve_border_collision_recursive(Particle& particle,
                 acceleration);
         }
     }
+}
+ 
+ForceType Simulation::compute_exact_force(const Particle& particle) {
+    auto force = ForceType::zero();
+
+    for(auto& item : m_grid) {
+        auto& target = *item.second;
+        if(&target.particle() == &particle) continue;
+        force += particle.compute_force(target.particle());
+    } 
+
+    return force;
+}
+ 
+ForceType Simulation::compute_acceleration_from_force(const Particle& particle, 
+        const ForceType& force) const {
+    return force / particle.mass(); 
 }
  
 void Simulation::advance_physics(Particle& particle, double dt, SpatialVector acceleration) {

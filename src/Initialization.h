@@ -8,6 +8,7 @@
 #include "Particle.h"
 #include "Grid.h"
 #include "CommonTypes.h"
+#include "ParticleInteractionFactory.h"
 
 template <typename Rng>
 class PopulationBuilder {
@@ -50,12 +51,22 @@ public:
         return std::move(*this);
     }
 
+    PopulationBuilder&& set_interaction_factory(
+            std::unique_ptr<IParticleInteractionFactory> factory) {
+        m_interaction_factory = std::move(factory);
+        return std::move(*this);
+    }
+
     PopulationBuilder&& execute(std::size_t num_particles) {
  
         for(std::size_t n = 0; n < num_particles; ++n) {
             Particle p(m_radius_dist(m_rng), m_mass_dist(m_rng), m_position_dist(m_rng));
             p.update_velocity(m_velocity_dist(m_rng));
             p.apply_update();
+            if(m_interaction_factory != nullptr) {
+                auto interaction = m_interaction_factory->build_interaction(p);
+                p.set_interaction(std::move(interaction));
+            }
             m_grid->add(std::move(p));
         }
         m_grid->next_frame();
@@ -71,6 +82,8 @@ private:
     std::function<Vector2<PositionType> (Rng&)> m_position_dist;
     std::function<Vector2<PositionType> (Rng&)> m_velocity_dist;
     std::function<QuantityType (Rng&)> m_mass_dist;
+
+    std::unique_ptr<IParticleInteractionFactory> m_interaction_factory;
 
     RngType m_rng;
     Grid* m_grid;

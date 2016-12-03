@@ -1,17 +1,23 @@
 #ifndef PS_PARTICLE_H_
 #define PS_PARTICLE_H_
 
+#include <memory>
+#include <cassert>
+
 #include "Vector2.h"
 #include "DoubleBuffered.h"
 #include "CommonTypes.h"
+#include "ParticleInteraction.h"
 
 class Particle {
 public:
     using Vector2t = Vector2<QuantityType>;
 
     Particle(QuantityType radius, QuantityType mass, 
-            const Vector2t& position=Vector2t::zero()):
-        m_position(position), m_radius(radius), m_mass(mass), m_id(m_next_id++) 
+            const Vector2t& position=Vector2t::zero(),
+            std::unique_ptr<IParticleInteraction> interaction = nullptr):
+        m_position(position), m_radius(radius), m_mass(mass), m_id(m_next_id++),
+        m_interaction(std::move(interaction))
     {}
 
     ~Particle() = default;
@@ -71,6 +77,11 @@ public:
         m_radius = radius;
     }
 
+    const IParticleInteraction& interaction() const {return *m_interaction;}
+    void set_interaction(std::unique_ptr<IParticleInteraction> interaction) {
+        m_interaction = std::move(interaction);
+    }
+
     QuantityType mass() const {
         return m_mass;
     }
@@ -79,12 +90,19 @@ public:
         return m_id;
     }
 
+    ForceType compute_force(const Particle& target) const {
+        assert(m_interaction != nullptr);
+        return m_interaction->compute_force(target, *this);
+    }
+
 private:
     DoubleBuffered<Vector2t> m_position = Vector2t(0, 0);
     DoubleBuffered<Vector2t> m_velocity = Vector2t(0, 0);
     QuantityType m_radius;
     QuantityType m_mass;
     int m_id;
+
+    std::unique_ptr<IParticleInteraction> m_interaction;
 
     static int m_next_id;
 };
