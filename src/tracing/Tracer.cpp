@@ -13,7 +13,7 @@ Tracer::~Tracer() {
  
 }
  
-Tracer::Tracer(tracing::Tracer&& other) noexcept:
+/*Tracer::Tracer(tracing::Tracer&& other) noexcept:
     m_sinks(std::move(other.m_sinks)) {
  
 }
@@ -21,7 +21,7 @@ Tracer::Tracer(tracing::Tracer&& other) noexcept:
 Tracer& Tracer::operator=(tracing::Tracer&& other) noexcept {
     m_sinks = std::move(other.m_sinks);
     return *this; 
-}
+}*/
  
 void Tracer::broadcast_event(TraceEvent& event) {
     for(auto& sink : m_sinks) {
@@ -48,11 +48,38 @@ void Tracer::remove_all_sinks() {
 }
  
 void Tracer::enable_particle_tracing(const Particle& particle) {
-    m_active_particles.insert(particle.id());
+    enable_particle_tracing(particle.id());
+}
+void Tracer::enable_particle_tracing(int id) {
+    m_active_particles.insert(id);
+    m_last_particle = nullptr;
+}
+void Tracer::enable_particle_tracing(const std::vector<int>& ids) {
+    for(auto id : ids) {
+        enable_particle_tracing(id);
+    }
+}
+void Tracer::enable_particle_tracing(std::initializer_list<int> ids) {
+    for(auto id : ids) {
+        enable_particle_tracing(id);
+    }
 }
  
 void Tracer::disable_particle_tracing(const Particle& particle) {
-    m_active_particles.erase(particle.id()); 
+    disable_particle_tracing(particle.id());
 }
- 
+void Tracer::disable_particle_tracing(int id) {
+    m_active_particles.erase(id); 
+    m_last_particle = nullptr;
+}
+void Tracer::disable_particle_tracing(const std::vector<int>& ids) {
+    for(auto id : ids) {
+        disable_particle_tracing(id);
+    }
+}
+void Tracer::disable_particle_tracing(std::initializer_list<int> ids) {
+    for(auto id : ids) {
+        disable_particle_tracing(id);
+    }
+}
 }

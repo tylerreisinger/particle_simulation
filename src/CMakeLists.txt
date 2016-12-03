@@ -11,6 +11,7 @@ if(ENABLE_TRACING)
     set(TRACING_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/TracerConfig.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tracing/FileSinkBackend.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/tracing/ParticleFilter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tracing/PlotTracerFormatter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tracing/Tracer.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/tracing/TraceEvent.cpp

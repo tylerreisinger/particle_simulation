@@ -31,11 +31,10 @@
 #include <unordered_set>
 
 #include "TraceEvent.h"
-
+#include "TracerSink.h"
 #include "Particle.h"
 
 namespace tracing {
-class ITracerSink;
 
 class Tracer {
 public:
@@ -43,9 +42,9 @@ public:
     ~Tracer();
 
     Tracer(const Tracer& other) = delete;
-    Tracer(Tracer&& other) noexcept;
+    Tracer(Tracer&& other) noexcept = default;
     Tracer& operator =(const Tracer& other) = delete;
-    Tracer& operator =(Tracer&& other) noexcept;
+    Tracer& operator =(Tracer&& other) noexcept = default;
 
     void broadcast_event(TraceEvent& event);
     void broadcast_event(TraceEvent&& event);
@@ -55,7 +54,13 @@ public:
     void remove_all_sinks();
 
     void enable_particle_tracing(const Particle& particle);
+    void enable_particle_tracing(int id);
+    void enable_particle_tracing(const std::vector<int>& ids);
+    void enable_particle_tracing(std::initializer_list<int> ids);
     void disable_particle_tracing(const Particle& particle);
+    void disable_particle_tracing(int id);
+    void disable_particle_tracing(const std::vector<int>& ids);
+    void disable_particle_tracing(std::initializer_list<int> ids);
 
     bool is_particle_active(const Particle& particle) const;
 

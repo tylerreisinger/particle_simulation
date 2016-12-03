@@ -25,6 +25,9 @@ class TracerSink: public ITracerSink {
 public:
     TracerSink(std::shared_ptr<ITracerSinkBackend<RecordType>> backend,
             std::shared_ptr<TracerFormatter<RecordType>> formatter);
+    TracerSink(std::shared_ptr<ITracerSinkBackend<RecordType>> backend,
+            std::shared_ptr<TracerFormatter<RecordType>> formatter,
+            std::shared_ptr<TracerFilter> filter);
     virtual ~TracerSink() {};
 
     TracerSink(const TracerSink& other) = delete;
@@ -58,6 +61,15 @@ inline TracerSink<RecordType>::TracerSink(
     m_backend(std::move(backend)), m_formatter(std::move(formatter)) {
  
 }
+
+template<typename RecordType>
+inline TracerSink<RecordType>::TracerSink(
+        std::shared_ptr<ITracerSinkBackend<RecordType>> backend,
+        std::shared_ptr<TracerFormatter<RecordType>> formatter,
+        std::shared_ptr<TracerFilter> filter):
+    m_backend(std::move(backend)), m_formatter(std::move(formatter)),
+    m_filter(std::move(filter)) 
+{}
  
 template<typename RecordType>
 inline void TracerSink<RecordType>::emit_record(TraceEvent& event) {
