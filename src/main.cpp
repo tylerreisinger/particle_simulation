@@ -7,7 +7,7 @@
 #include "World.h"
 #include "Grid.h"
 #include "Particle.h"
-#include "Initialization.h"
+#include "PopulationBuilder.h"
 #include "Vector2.h"
 
 #include "PrototypalInteractionFactory.h"
@@ -20,9 +20,9 @@ int main(int argc, char** argv) {
 
     auto force_fn = 
         [](const Particle& target, const Particle& src) {
-            auto r = (target.position() - src.position());
+            auto r = (src.position() - target.position());
             auto dist = r.magnitude_squared();
-            dist = std::max(dist, QuantityType(0.10));
+            dist = std::max(dist, QuantityType(0.50));
             return (src.get_charge(0)*target.get_charge(0)) 
                 * PositionType(1.0 / dist) * r.to_unit();
         };
@@ -45,18 +45,18 @@ int main(int argc, char** argv) {
             std::move(interaction_factory)
         )
         .broadcast_charge_distribution(
-            std::uniform_real_distribution<QuantityType>(0.0, 1.0)
+            std::uniform_real_distribution<QuantityType>(1.0, 5.0)
         )
-        .execute(5);
+        .execute(2);
 
     grid.print_particle_density(std::cout, 0);
 
     Simulation s(std::move(grid));
 
-    for(int i = 0; i < 5000; ++i) {
+    for(int i = 0; i < 250; ++i) {
         s.do_frame();
         s.get_particles().print_particle_density(std::cout, 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     return 0;
