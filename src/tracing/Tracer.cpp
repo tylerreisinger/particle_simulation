@@ -25,13 +25,17 @@ Tracer& Tracer::operator=(tracing::Tracer&& other) noexcept {
  
 void Tracer::broadcast_event(TraceEvent& event) {
     for(auto& sink : m_sinks) {
-        sink->emit_record(event); 
+        if(sink->is_enabled()) {
+            sink->emit_record(event); 
+        }
     } 
 }
  
 void Tracer::broadcast_event(TraceEvent&& event) {
     for(auto& sink : m_sinks) {
-        sink->emit_record(event); 
+        if(sink->is_enabled()) {
+            sink->emit_record(event); 
+        }
     } 
 }
  

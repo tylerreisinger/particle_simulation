@@ -17,6 +17,7 @@ public:
     virtual ~ITracerSink() {};
 
     virtual void emit_record(TraceEvent& event) = 0;
+    virtual bool is_enabled() const {return true;}
 };
 
 template <typename RecordType>
@@ -39,11 +40,15 @@ public:
     TracerSink& set_backend(
             std::shared_ptr<ITracerSinkBackend<RecordType>>& backend);
 
+    void set_enabled(bool is_enabled) {m_is_enabled = is_enabled;}
+    virtual bool is_enabled() const override {return m_is_enabled;}
+
 private:
     std::shared_ptr<TracerFilter> m_filter = 
         std::make_shared<TracerFilter>();
     std::shared_ptr<ITracerSinkBackend<RecordType>> m_backend;
     std::shared_ptr<TracerFormatter<RecordType>> m_formatter;
+    bool m_is_enabled = true;
 };
 
 template<typename RecordType>
