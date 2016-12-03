@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <cassert>
+#include <vector>
 
 #include "Vector2.h"
 #include "DoubleBuffered.h"
@@ -13,11 +14,11 @@ class Particle {
 public:
     using Vector2t = Vector2<QuantityType>;
 
-    Particle(QuantityType radius, QuantityType mass, 
-            const Vector2t& position=Vector2t::zero(),
+    Particle(QuantityType radius, QuantityType mass,
+            const Vector2t& position=Vector2t::zero(), std::size_t num_charges = 0,
             std::unique_ptr<IParticleInteraction> interaction = nullptr):
-        m_position(position), m_radius(radius), m_mass(mass), m_id(m_next_id++),
-        m_interaction(std::move(interaction))
+        m_charges(num_charges), m_position(position), m_radius(radius), 
+        m_mass(mass), m_id(m_next_id++), m_interaction(std::move(interaction))
     {}
 
     ~Particle() = default;
@@ -68,6 +69,12 @@ public:
     void reset_velocity() {
         m_velocity.reset();
     }
+    std::vector<ChargeType>& charges() {return m_charges;}
+    const std::vector<ChargeType>& charges() const {return m_charges;}
+    ChargeType& get_charge(std::size_t idx) {return m_charges[idx];}
+    const ChargeType& get_charge(std::size_t idx) const {return m_charges[idx];}
+    std::size_t charge_count() const {return m_charges.size();}
+
 
     QuantityType radius() const {
         return m_radius;
@@ -96,6 +103,7 @@ public:
     }
 
 private:
+    std::vector<ChargeType> m_charges;
     DoubleBuffered<Vector2t> m_position = Vector2t(0, 0);
     DoubleBuffered<Vector2t> m_velocity = Vector2t(0, 0);
     QuantityType m_radius;

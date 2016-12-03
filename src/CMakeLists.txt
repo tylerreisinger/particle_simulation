@@ -1,4 +1,5 @@
 set(SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/ChargeMapping.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Grid.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Particle.cpp

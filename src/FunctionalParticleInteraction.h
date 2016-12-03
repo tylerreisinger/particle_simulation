@@ -2,18 +2,21 @@
 #define FUNCTIONALPARTICLEINTERACTION_H_
 
 #include <utility>
-#include <array>
+#include <vector>
 
 #include "ParticleInteraction.h"
 #include "Vector2.h"
+#include "CommonTypes.h"
 
 template <typename Fn, typename Enable = void>
 class FunctionalParticleInteractionHelper;
 
-template <typename Fn, std::size_t NumCharges>
+template <typename Fn>
 class FunctionalParticleInteraction: public FunctionalParticleInteractionHelper<Fn> {
 public:
     FunctionalParticleInteraction(Fn&& force_function);
+    FunctionalParticleInteraction(std::vector<ChargeIndexType> charges, 
+            Fn&& force_function);
     virtual ~FunctionalParticleInteraction() = default;
 
     FunctionalParticleInteraction(const FunctionalParticleInteraction& other) = default;
@@ -22,15 +25,21 @@ public:
     FunctionalParticleInteraction& operator =(FunctionalParticleInteraction&& other) noexcept = default;
 
     virtual ForceType compute_force(const Particle& target, const Particle& src) const override;    
+    virtual std::vector<ChargeIndexType> required_charges() const override {
+        return m_charge_indices;
+    }
+    virtual void bind_charges(std::vector<ChargeIndexType> charge_indices) override {
+        m_charge_indices = std::move(charge_indices);
+    }
 
     virtual std::unique_ptr<ClonableParticleInteraction> clone() const override {
         return std::unique_ptr<ClonableParticleInteraction>(
-            new FunctionalParticleInteraction<Fn, NumCharges>(*this));
+            new FunctionalParticleInteraction<Fn>(*this));
     }
 
 private:
     Fn m_fn;
-    std::array<ChargeType, NumCharges> m_charges;
+    std::vector<ChargeIndexType> m_charge_indices;
 };
 
 template <typename Fn>
@@ -45,24 +54,31 @@ class FunctionalParticleInteractionHelper<Fn, std::enable_if_t<
 };
 
 
-template <std::size_t NumCharges, typename Fn>
-std::unique_ptr<FunctionalParticleInteraction<Fn, NumCharges>> 
+template <typename Fn>
+std::unique_ptr<FunctionalParticleInteraction<Fn>> 
     make_functional_particle_interaction(
         Fn&& force_function) {
-    return std::make_unique<FunctionalParticleInteraction<Fn, NumCharges>>
+    return std::make_unique<FunctionalParticleInteraction<Fn>>
         (std::forward<Fn>(force_function));
 }
 
-template <typename Fn, std::size_t NumCharges>
-inline FunctionalParticleInteraction<Fn, NumCharges>::FunctionalParticleInteraction(
+template<typename Fn>
+inline FunctionalParticleInteraction<Fn>::FunctionalParticleInteraction(
         Fn&& force_function):
-    m_fn(std::forward<Fn>(force_function)) { 
+    m_fn(std::forward<Fn>(force_function)) {
 }
  
-template <typename Fn, std::size_t NumCharges>
-inline ForceType FunctionalParticleInteraction<Fn, NumCharges>::compute_force(
+template <typename Fn>
+inline FunctionalParticleInteraction<Fn>::FunctionalParticleInteraction(
+        std::vector<ChargeIndexType> charge_indices, Fn&& force_function):
+    m_fn(std::forward<Fn>(force_function)), 
+    m_charge_indices(std::move(charge_indices)) { 
+}
+ 
+template <typename Fn>
+inline ForceType FunctionalParticleInteraction<Fn>::compute_force(
         const Particle& target, const Particle& src) const {
-    return m_fn(m_charges, target, src); 
+    return m_fn(target, src); 
 }
  
 #endif

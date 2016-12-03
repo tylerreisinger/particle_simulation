@@ -4,6 +4,7 @@
 template<typename T>
 class Vector2;
 
+using ChargeIndexType = int;
 using PositionType = float;
 using QuantityType = float;
 using ChargeType = float;

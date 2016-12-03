@@ -3,20 +3,21 @@
 
 #include <random>
 #include <functional>
+#include <cassert>
 
 #include "Vector2.h"
 #include "Particle.h"
 #include "Grid.h"
 #include "CommonTypes.h"
 #include "ParticleInteractionFactory.h"
+#include "ChargeMapping.h"
 
 template <typename Rng>
 class PopulationBuilder {
 public:
     using RngType = std::remove_reference_t<Rng>;
     PopulationBuilder(Rng& rng, Grid& grid):
-        m_rng(rng), m_grid(&grid)
-    {
+        m_rng(rng), m_grid(&grid) {
         set_defaults(grid);
     }
 
@@ -54,18 +55,59 @@ public:
     PopulationBuilder&& set_interaction_factory(
             std::unique_ptr<IParticleInteractionFactory> factory) {
         m_interaction_factory = std::move(factory);
+        m_charge_dists.clear();
+        m_charge_dists.resize(m_interaction_factory->total_charge_count());
+        set_charge_defaults();
+        return std::move(*this);
+    }
+    
+    PopulationBuilder&& set_charge_distribution(std::size_t idx, 
+            std::function<ChargeType (Rng&, const Particle&)> dist) {
+        assert(idx < m_charge_dists.size());
+        m_charge_dists[idx] = std::move(dist);
+        return std::move(*this);
+    }
+
+    PopulationBuilder&& set_charge_distribution(std::size_t idx, 
+            std::function<ChargeType (Rng&)> dist) {
+        return set_charge_distribution(
+                [dist(std::move(dist))](Rng& rng, const Particle&) {return dist(rng);});
+    }
+
+    template <typename Fn>
+    PopulationBuilder&& set_charge_distribution(const std::string& name, Fn&& dist) {
+        assert(m_interaction_factory != nullptr);
+        auto idx = m_interaction_factory->get_charge_index(name);
+        return set_charge_distribution(idx, std::forward<Fn>(dist));
+    }
+    
+    PopulationBuilder&& broadcast_charge_distribution(
+            std::function<ChargeType (Rng&)> dist) {
+        return broadcast_charge_distribution(
+                [dist(std::move(dist))](Rng& rng, const Particle&) {return dist(rng);});
+    }
+    PopulationBuilder&& broadcast_charge_distribution(
+            std::function<ChargeType (Rng&, const Particle&)> dist) {
+        for(std::size_t i = 0; i < m_charge_dists.size(); ++i) {
+            set_charge_distribution(i, dist);
+        }
         return std::move(*this);
     }
 
     PopulationBuilder&& execute(std::size_t num_particles) {
  
         for(std::size_t n = 0; n < num_particles; ++n) {
-            Particle p(m_radius_dist(m_rng), m_mass_dist(m_rng), m_position_dist(m_rng));
+            Particle p(m_radius_dist(m_rng), m_mass_dist(m_rng), 
+                    m_position_dist(m_rng), m_interaction_factory->total_charge_count());
+
             p.update_velocity(m_velocity_dist(m_rng));
             p.apply_update();
             if(m_interaction_factory != nullptr) {
                 auto interaction = m_interaction_factory->build_interaction(p);
                 p.set_interaction(std::move(interaction));
+                for(std::size_t i = 0; i < m_interaction_factory->total_charge_count(); ++i) {
+                    p.charges()[i] = m_charge_dists[i](m_rng, p);
+                }
             }
             m_grid->add(std::move(p));
         }
@@ -75,13 +117,14 @@ public:
     }
 
 private:
-
     void set_defaults(const Grid& grid);
+    void set_charge_defaults();
 
     std::function<PositionType (Rng&)> m_radius_dist;
     std::function<Vector2<PositionType> (Rng&)> m_position_dist;
     std::function<Vector2<PositionType> (Rng&)> m_velocity_dist;
     std::function<QuantityType (Rng&)> m_mass_dist;
+    std::vector<std::function<ChargeType (Rng&, const Particle&)>> m_charge_dists; 
 
     std::unique_ptr<IParticleInteractionFactory> m_interaction_factory;
 
@@ -90,13 +133,13 @@ private:
 };
 
 template <typename Rng>
-PopulationBuilder<Rng> make_population_builder(Rng&& rng, Grid& grid) {
+inline PopulationBuilder<Rng> make_population_builder(Rng&& rng, Grid& grid) {
     auto bd = PopulationBuilder<Rng>(std::forward<Rng>(rng), grid);
     return bd;
 }
 
 template <typename Rng>
-void PopulationBuilder<Rng>::set_defaults(const Grid& grid) {
+inline void PopulationBuilder<Rng>::set_defaults(const Grid& grid) {
     m_position_dist = make_vector2_distribution(
         std::uniform_real_distribution<PositionType>(0.0, grid.width()),
         std::uniform_real_distribution<PositionType>(0.0, grid.height()));
@@ -108,4 +151,11 @@ void PopulationBuilder<Rng>::set_defaults(const Grid& grid) {
     m_mass_dist = [](Rng& rng) {return 1.0;};
 }
 
+template<typename Rng>
+inline void PopulationBuilder<Rng>::set_charge_defaults() {
+    for(std::size_t i = 0; i < m_charge_dists.size(); ++i) {
+        m_charge_dists[i] = [](Rng&, const Particle&) {return ChargeType(0.0);};
+    }
+}
+ 
 #endif

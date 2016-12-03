@@ -2,6 +2,7 @@
 #define PS_PARTICLEINTEREACTION_H_
 
 #include <memory>
+#include <vector>
 
 #include "CommonTypes.h"
 
@@ -13,8 +14,9 @@ public:
     virtual ~IParticleInteraction() {};
 
     virtual ForceType compute_force(const Particle& target, const Particle& src) const = 0;
+    virtual std::vector<ChargeIndexType> required_charges() const {return {};}
 
-
+    virtual void bind_charges(std::vector<ChargeIndexType> charge_indices) = 0;
 };
 
 class ClonableParticleInteraction: public IParticleInteraction {
