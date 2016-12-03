@@ -10,7 +10,6 @@
 #include "Grid.h"
 #include "CommonTypes.h"
 #include "ParticleInteractionFactory.h"
-#include "ChargeMapping.h"
 
 template <typename Rng>
 class PopulationBuilder {
