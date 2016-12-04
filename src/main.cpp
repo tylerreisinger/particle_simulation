@@ -13,6 +13,9 @@
 #include "PrototypalInteractionFactory.h"
 #include "FunctionalParticleInteraction.h"
 
+#include "terminal_ui/Terminal.h"
+#include "terminal_ui/DensityPrinter.h"
+
 int main(int argc, char** argv) {
     Grid grid(10, 10, 10, 10);
 
@@ -20,7 +23,7 @@ int main(int argc, char** argv) {
 
     auto force_fn = 
         [](const Particle& target, const Particle& src) {
-            auto r = (src.position() - target.position());
+            auto r = (target.position() - src.position());
             auto dist = r.magnitude_squared();
             dist = std::max(dist, QuantityType(0.50));
             return (src.get_charge(0)*target.get_charge(0)) 
@@ -45,18 +48,19 @@ int main(int argc, char** argv) {
             std::move(interaction_factory)
         )
         .broadcast_charge_distribution(
-            std::uniform_real_distribution<QuantityType>(1.0, 5.0)
+            std::uniform_real_distribution<QuantityType>(0.0, 1.0)
         )
-        .execute(2);
+        .execute(5);
 
     grid.print_particle_density(std::cout, 0);
 
-    Simulation s(std::move(grid));
+    auto output = DensityPrinter(10, 10, {0, 0, 10, 10});
 
-    for(int i = 0; i < 250; ++i) {
+    Simulation s(std::move(grid));
+    for(int i = 0; i < 500; ++i) {
         s.do_frame();
-        s.get_particles().print_particle_density(std::cout, 0);
-        //std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        output.draw_state(std::cout, s.get_particles());
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
     return 0;

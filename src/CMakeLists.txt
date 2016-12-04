@@ -26,6 +26,7 @@ endif()
 if(ENABLE_COLOR_CUI)
     set(CUI_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/terminal_ui/Terminal.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/terminal_ui/DensityPrinter.cpp
     PARENT_SCOPE)
 else()
     set(CUI_SOURCES PARENT_SCOPE)
