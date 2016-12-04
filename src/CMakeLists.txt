@@ -22,3 +22,11 @@ if(ENABLE_TRACING)
 else()
     set(TRACING_SOURCES PARENT_SCOPE)
 endif()
+
+if(ENABLE_COLOR_CUI)
+    set(CUI_SOURCES
+        ${CMAKE_CURRENT_SOURCE_DIR}/terminal_ui/Terminal.cpp
+    PARENT_SCOPE)
+else()
+    set(CUI_SOURCES PARENT_SCOPE)
+endif()
