@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         [](const Particle& target, const Particle& src) {
             auto r = (target.position() - src.position());
             auto dist = r.magnitude_squared();
-            dist = std::max(dist, QuantityType(0.50));
+            dist = std::max(dist, target.radius()*target.radius());
             return (src.get_charge(0)*target.get_charge(0)) 
                 * PositionType(1.0 / dist) * r.to_unit();
         };
@@ -51,8 +51,11 @@ int main(int argc, char** argv) {
         .set_interaction_factory(
             std::move(interaction_factory)
         )
+        .set_radius_distribution(
+            std::uniform_real_distribution<QuantityType>(0.2, 0.5)
+        )
         .broadcast_charge_distribution(
-            std::uniform_real_distribution<QuantityType>(1.0, 2.0)
+            std::uniform_real_distribution<QuantityType>(0.0, 1.0)
         )
         .execute(15);
 
