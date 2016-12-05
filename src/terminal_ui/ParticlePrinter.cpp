@@ -9,12 +9,15 @@ namespace tui {
 ParticlePrinter::ParticlePrinter(int width, int height, 
         const Viewport& viewport):
     BasicGridPrinter(width, height, viewport)
-{}
+{
+    set_default_palette();
+}
  
 void ParticlePrinter::print_grid(std::ostream& stream, const Grid& grid) const {
     auto format_grid = build_format_grid(grid);
 
     render(stream, format_grid);     
+    term::Terminal::instance().reset_formatting();
 }
  
 std::vector<GridCell> ParticlePrinter::build_format_grid(const Grid& grid) const {
@@ -22,6 +25,10 @@ std::vector<GridCell> ParticlePrinter::build_format_grid(const Grid& grid) const
 
     for(auto& p : grid) {
         auto& particle = p.second->particle();
+        if(m_particle_colors.find(particle.id()) == m_particle_colors.end()) {
+            m_particle_colors.insert(std::make_pair(
+                        particle.id(), static_cast<int>(m_particle_colors.size())));
+        }
         
         if(is_in_grid(particle.position())) {
             auto idx = position_to_grid_idx(particle.position());
@@ -73,10 +80,14 @@ void ParticlePrinter::draw_empty_cell(std::ostream& stream, const GridCell& cell
 }
  
 void ParticlePrinter::draw_particle_cell(std::ostream& stream, const GridCell& cell) const {
+    auto& color = color_for_particle(*cell.particle);
+    term::Terminal::instance().set_foreground_color(color);
     stream << PARTICLE_CHAR;
 }
  
 void ParticlePrinter::draw_multi_cell(std::ostream& stream, const GridCell& cell) const {
+    auto& color = color_for_particle(*cell.particle);
+    term::Terminal::instance().set_foreground_color(color);
     stream << MULTI_CELL_CHAR; 
 }
  
@@ -93,6 +104,25 @@ void ParticlePrinter::draw_border_row(std::ostream& stream) const {
         draw_border_cell(stream);
     } 
     stream << "\n";
+}
+ 
+void ParticlePrinter::set_default_palette() {
+    m_palette = Palette{
+        term::Color16(term::ColorPalette16::Red),
+        term::Color16(term::ColorPalette16::BrightCyan),
+        term::Color16(term::ColorPalette16::BrightBlue),
+        term::Color16(term::ColorPalette16::Yellow),
+        term::Color16(term::ColorPalette16::BrightGreen),
+        term::Color256(100),
+        term::Rgb(100, 0, 110)
+    }; 
+}
+ 
+const term::TerminalColor& ParticlePrinter::color_for_particle(
+        const Particle& particle) const {
+    auto color_idx = m_particle_colors.at(particle.id());
+    auto& color = m_palette[color_idx];
+    return color;
 }
  
 }

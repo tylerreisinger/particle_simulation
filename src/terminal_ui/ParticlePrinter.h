@@ -7,6 +7,7 @@
 #include "Viewport.h"
 #include "Terminal.h"
 #include "BasicGridPrinter.h"
+#include "Palette.h"
 
 class Grid;
 class Particle;
@@ -51,8 +52,11 @@ private:
     void draw_multi_cell(std::ostream& stream, const GridCell& cell) const;
     void draw_border_cell(std::ostream& stream) const;
     void draw_border_row(std::ostream& stream) const;
+    void set_default_palette();
+    const term::TerminalColor& color_for_particle(const Particle& particle) const;
 
-
+    mutable std::unordered_map<int, int> m_particle_colors;
+    Palette m_palette;
     bool m_draw_border = true;
 
     static constexpr char EMPTY_CELL_CHAR = ' ';

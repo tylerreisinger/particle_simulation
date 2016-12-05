@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
         .broadcast_charge_distribution(
             std::uniform_real_distribution<QuantityType>(1.0, 2.0)
         )
-        .execute(2);
+        .execute(15);
 
     grid.print_particle_density(std::cout, 0);
 
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     auto output2 = tui::ParticlePrinter(20, 20, {0, 0, 10, 10});
 
     Simulation s(std::move(grid));
-    for(int i = 0; i < 300; ++i) {
+    for(int i = 0; i < 1000; ++i) {
         s.do_frame();
         output.print_grid(std::cout, s.get_particles());
         output2.print_grid(std::cout, s.get_particles());
