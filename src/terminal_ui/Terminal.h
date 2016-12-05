@@ -263,6 +263,13 @@ public:
     TerminalColor(std::unique_ptr<TerminalColorBase> color):
         m_color(std::move(color)) {
     }
+    TerminalColor(const Color16& color):
+        m_color(std::make_unique<PolymorphicTerminalColor<Color16>>(color)) {}
+    TerminalColor(const Color256& color):
+        m_color(std::make_unique<PolymorphicTerminalColor<Color256>>(color)) {}
+    TerminalColor(const Rgb& color):
+        m_color(std::make_unique<PolymorphicTerminalColor<Rgb>>(color)) {}
+    
     ~TerminalColor() = default;
 
     TerminalColor(const TerminalColor& other):
