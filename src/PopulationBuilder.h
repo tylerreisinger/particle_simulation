@@ -11,6 +11,8 @@
 #include "CommonTypes.h"
 #include "ParticleInteractionFactory.h"
 
+#include "ParticleParameters.h"
+
 template <typename Rng>
 class PopulationBuilder {
 public:
@@ -93,19 +95,16 @@ public:
         return std::move(*this);
     }
 
-    PopulationBuilder&& execute(std::size_t num_particles) {
- 
+    PopulationBuilder&& generate(std::size_t num_particles) {
         for(std::size_t n = 0; n < num_particles; ++n) {
             Particle p(m_radius_dist(m_rng), m_mass_dist(m_rng), 
-                    m_position_dist(m_rng), m_interaction_factory->total_charge_count());
-
-            p.update_velocity(m_velocity_dist(m_rng));
-            p.apply_update();
+                    m_position_dist(m_rng), m_velocity_dist(m_rng),
+                    num_charges());
             if(m_interaction_factory != nullptr) {
                 auto interaction = m_interaction_factory->build_interaction(p);
                 p.set_interaction(std::move(interaction));
-                for(std::size_t i = 0; i < m_interaction_factory->total_charge_count(); ++i) {
-                    p.charges()[i] = m_charge_dists[i](m_rng, p);
+                for(std::size_t i = 0; i < num_charges(); ++i) {
+                    p.set_charge(i, m_charge_dists[i](m_rng, p));
                 }
             }
             m_grid->add(std::move(p));
@@ -115,9 +114,42 @@ public:
         return std::move(*this);
     }
 
+    PopulationBuilder&& populate(std::initializer_list<ParticleParameters> particles) {
+        for(auto& params : particles) {
+            auto particle = particle_from_params(params);
+            m_grid->add(std::move(particle));
+        }
+        m_grid->next_frame();
+        return std::move(*this);
+    }
+
+    std::size_t num_charges() const {return m_interaction_factory->total_charge_count();}
+
+
 private:
     void set_defaults(const Grid& grid);
     void set_charge_defaults();
+
+    Particle particle_from_params(const ParticleParameters& params) {
+        auto mass = params.mass().value_or(m_mass_dist(m_rng));
+        auto radius = params.radius().value_or(m_radius_dist(m_rng));
+        auto position = params.position().value_or(m_position_dist(m_rng));
+        auto velocity = params.velocity().value_or(m_velocity_dist(m_rng));
+        Particle p(mass, radius, position, velocity, num_charges());
+        if(m_interaction_factory != nullptr) {
+            auto interaction = m_interaction_factory->build_interaction(p);
+            p.set_interaction(std::move(interaction));
+            for(std::size_t i = 0; i < num_charges(); ++i) {
+                if(i < params.charges().size()) {
+                    p.set_charge(i, params.charges()[i]
+                            .value_or(m_charge_dists[i](m_rng, p)));
+                } else {
+                    p.set_charge(i, m_charge_dists[i](m_rng, p));
+                }
+            }
+        }
+        return p;
+    }
 
     std::function<PositionType (Rng&)> m_radius_dist;
     std::function<Vector2<PositionType> (Rng&)> m_position_dist;

@@ -20,6 +20,15 @@ public:
         m_charges(num_charges), m_position(position), m_radius(radius), 
         m_mass(mass), m_id(m_next_id++), m_interaction(std::move(interaction))
     {}
+    Particle(QuantityType radius, QuantityType mass,
+            const Vector2t& position=Vector2t::zero(), 
+            const Vector2t& velocity=Vector2t::zero(),
+            std::size_t num_charges = 0,
+            std::unique_ptr<IParticleInteraction> interaction = nullptr):
+        m_charges(num_charges), m_position(position), m_velocity(velocity),
+        m_radius(radius), m_mass(mass), m_id(m_next_id++), 
+        m_interaction(std::move(interaction))
+    {}
 
     ~Particle() = default;
 
@@ -36,8 +45,9 @@ public:
         m_position.set(position);
     }
 
-    void update_velocity(const Vector2t& velocity) {
+    Particle&& update_velocity(const Vector2t& velocity) {
         m_velocity.set(velocity);
+        return std::move(*this);
     }
 
     void apply_update() {
@@ -75,6 +85,15 @@ public:
     const ChargeType& get_charge(std::size_t idx) const {return m_charges[idx];}
     std::size_t charge_count() const {return m_charges.size();}
 
+    Particle&& set_charge(std::size_t idx, ChargeType value) {
+        assert(idx < m_charges.size());
+        m_charges[idx] = value;
+        return std::move(*this);
+    }
+
+    void update_charge_count(std::size_t count) {
+        m_charges.resize(count);
+    }
 
     QuantityType radius() const {
         return m_radius;
