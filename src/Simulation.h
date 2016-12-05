@@ -10,7 +10,8 @@ class Simulation {
 public:
     using SpatialContainer = Grid;
 
-    explicit Simulation(SpatialContainer&& grid);
+    Simulation(SpatialContainer&& grid,
+            double base_time_step = 1.0);
     ~Simulation() = default;
 
     Simulation(const Simulation& other) = delete;
@@ -19,6 +20,9 @@ public:
     Simulation& operator =(Simulation&& other) noexcept = delete;
 
     void do_frame();
+
+    double base_time_step() const {return m_base_time_step;}
+    void set_base_time_step(double value) {m_base_time_step = value;}
 
     SpatialContainer& get_particles() {
         return m_grid;
@@ -49,6 +53,7 @@ private:
 
     SpatialContainer m_grid;        
     SimulationTime m_simulation_time;
+    double m_base_time_step = 1.0;
 
 #ifdef TRACING
     tracing::Tracer m_tracer;

@@ -12,8 +12,8 @@ using tracing::TraceEvent;
 #endif
 
 
-Simulation::Simulation(SpatialContainer&& grid):
-        m_grid(std::move(grid)) {
+Simulation::Simulation(SpatialContainer&& grid, double base_time_step):
+        m_grid(std::move(grid)), m_base_time_step(base_time_step) {
 
 #ifdef TRACING
     m_tracer = build_tracer();
@@ -22,7 +22,7 @@ Simulation::Simulation(SpatialContainer&& grid):
 }
  
 void Simulation::do_frame() {
-    m_simulation_time.begin_frame(0.05);
+    m_simulation_time.begin_frame(m_base_time_step);
 
     std::cout << "===== Frame Start: t=" << m_simulation_time.current_simulation_time()
         << " =====\n";
