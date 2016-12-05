@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "BoundaryBounceResolver.h"
 
 #ifdef TRACING
 #include "TracerConfig.h"
@@ -15,6 +16,7 @@ using tracing::TraceEvent;
 Simulation::Simulation(SpatialContainer&& grid, double base_time_step):
         m_grid(std::move(grid)), m_base_time_step(base_time_step) {
 
+    m_boundary_collision_resolver = make_default_boundary_resolver();
 #ifdef TRACING
     m_tracer = build_tracer();
     setup_tracing();
@@ -50,93 +52,27 @@ void Simulation::do_frame() {
     SIM_TRACER_EVENT(m_tracer, TraceEventType::FrameEnd, this, m_simulation_time);
 }
  
+void Simulation::simulate_motion(Particle& particle, 
+        double dt, const SpatialVector& acceleration) {
+    euler(particle, dt, acceleration); 
+}
+
+std::unique_ptr<IBoundaryCollisionResolver> Simulation::make_default_boundary_resolver() {
+    return std::make_unique<BoundaryBounceResolver>();
+}
+ 
 void Simulation::on_particle_out_of_boundry(Particle& particle,
         SpatialVector& acceleration) {
     PARTICLE_TRACER_EVENT(m_tracer, TraceEventType::WallCollideBegin, particle,
             this, m_simulation_time);
 
-    resolve_border_collision(particle,acceleration);
+    m_boundary_collision_resolver->resolve_border_collision(*this, m_grid,
+            particle, acceleration);
 
     PARTICLE_TRACER_EVENT(m_tracer, TraceEventType::WallCollideEnd, particle,
             this, m_simulation_time);
 }
 
-void Simulation::resolve_border_collision(Particle& particle, 
-        SpatialVector& acceleration) {
-    double remaining_time = m_simulation_time.time_delta();
-
-    resolve_border_collision_recursive(particle, remaining_time, acceleration);
-
-    if(remaining_time > 0) {
-        PARTICLE_TRACER_EVENT(m_tracer, TraceEventType::SimulateRemainder,
-            particle, this, m_simulation_time);
-        PARTICLE_MOTION_TRACER_EVENT(m_tracer, TraceEventType::MotionParamsUpdated, particle,
-            this, m_simulation_time, remaining_time, acceleration, ( 
-                [this, &particle, remaining_time, &acceleration]() {
-                    euler(particle, remaining_time, acceleration);
-                }
-            ));
-    }
-}
-
-void Simulation::resolve_border_collision_recursive(Particle& particle, 
-        double& remaining_time, SpatialVector& acceleration) {
-
-    auto velocity = particle.next_velocity();
-    auto pos = particle.next_position();
-
-    double x_time;
-    double y_time;
-
-    if(velocity.x < 0) {
-        x_time = -pos.x / velocity.x;
-    } else {
-        x_time = (m_grid.width() - pos.x) / velocity.x;
-    }
-
-    if(velocity.y < 0) {
-        y_time = -pos.y / velocity.y;
-    } else {
-        y_time = (m_grid.height() - pos.y) / velocity.y;
-    }
-
-    if(x_time >= 0 && x_time < y_time) {
-        if(x_time < remaining_time) {
-            PARTICLE_TRACER_EVENT(m_tracer, TraceEventType::WallBounce,
-                    particle, this, m_simulation_time);
-
-            PARTICLE_MOTION_TRACER_EVENT(m_tracer, TraceEventType::MotionParamsUpdated, 
-                    particle, this, m_simulation_time, x_time, acceleration, ( 
-                [this, &particle, x_time, &acceleration]() {
-                    euler(particle, x_time, acceleration);
-                    particle.next_velocity().x = -particle.next_velocity().x;
-                }
-            ));
-
-            remaining_time -= x_time;
-            resolve_border_collision_recursive(particle, remaining_time,
-                acceleration);
-        }
-    } else if(y_time >= 0) {
-        if(y_time < remaining_time) {
-            PARTICLE_TRACER_EVENT(m_tracer, TraceEventType::WallBounce,
-                    particle, this, m_simulation_time);
-
-            PARTICLE_MOTION_TRACER_EVENT(m_tracer, TraceEventType::MotionParamsUpdated, 
-                    particle, this, m_simulation_time, y_time, acceleration, ( 
-                [this, &particle, y_time, &acceleration]() {
-                    euler(particle, y_time, acceleration); 
-                    particle.next_velocity().y = -particle.next_velocity().y;
-                }
-            ));
-
-            remaining_time -= y_time;
-            resolve_border_collision_recursive(particle, remaining_time,
-                acceleration);
-        }
-    }
-}
- 
 ForceType Simulation::compute_exact_force(const Particle& particle) {
     auto force = ForceType::zero();
 

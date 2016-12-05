@@ -23,7 +23,7 @@ Tracer& Tracer::operator=(tracing::Tracer&& other) noexcept {
     return *this; 
 }*/
  
-void Tracer::broadcast_event(TraceEvent& event) {
+void Tracer::broadcast_event(TraceEvent& event) const {
     for(auto& sink : m_sinks) {
         if(sink->is_enabled()) {
             sink->emit_record(event); 
@@ -31,7 +31,7 @@ void Tracer::broadcast_event(TraceEvent& event) {
     } 
 }
  
-void Tracer::broadcast_event(TraceEvent&& event) {
+void Tracer::broadcast_event(TraceEvent&& event) const {
     for(auto& sink : m_sinks) {
         if(sink->is_enabled()) {
             sink->emit_record(event); 

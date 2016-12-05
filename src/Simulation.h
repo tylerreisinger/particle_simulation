@@ -1,8 +1,11 @@
 #ifndef PS_SIMULATION_H_
 #define PS_SIMULATION_H_
 
+#include <memory>
+
 #include "Grid.h"
 #include "SimulationTime.h"
+#include "IBoundaryCollisionResolver.h"
 
 #include "tracing/Tracer.h"
 
@@ -24,6 +27,8 @@ public:
     double base_time_step() const {return m_base_time_step;}
     void set_base_time_step(double value) {m_base_time_step = value;}
 
+    const SimulationTime& simulation_time() const {return m_simulation_time;}
+
     SpatialContainer& get_particles() {
         return m_grid;
     }
@@ -31,16 +36,20 @@ public:
     const SpatialContainer& get_particles() const {
         return m_grid;
     }
-   
+
+    void simulate_motion(Particle& particle, double dt, 
+            const SpatialVector& acceleration);
+
+#ifdef TRACING
+    const tracing::Tracer& tracer() const {return m_tracer;}
+#endif   
 private: 
 #ifdef TRACING
     void setup_tracing();
 #endif
+    std::unique_ptr<IBoundaryCollisionResolver> make_default_boundary_resolver();
 
     void on_particle_out_of_boundry(Particle& particle, SpatialVector& acceleration);
-    void resolve_border_collision(Particle& particle, SpatialVector& acceleration);
-    void resolve_border_collision_recursive(Particle& particle, 
-            double& remaining_time, SpatialVector& acceleration);
 
     ForceType compute_exact_force(const Particle& particle);
     ForceType compute_acceleration_from_force(const Particle& particle, 
@@ -51,6 +60,7 @@ private:
     void euler(const Particle& particle, double dt, SpatialVector acceleration,
             SpatialVector& position, SpatialVector& velocity);
 
+    std::unique_ptr<IBoundaryCollisionResolver> m_boundary_collision_resolver;
     SpatialContainer m_grid;        
     SimulationTime m_simulation_time;
     double m_base_time_step = 1.0;

@@ -46,8 +46,8 @@ public:
     Tracer& operator =(const Tracer& other) = delete;
     Tracer& operator =(Tracer&& other) noexcept = default;
 
-    void broadcast_event(TraceEvent& event);
-    void broadcast_event(TraceEvent&& event);
+    void broadcast_event(TraceEvent& event) const;
+    void broadcast_event(TraceEvent&& event) const;
 
     void attach_sink(std::unique_ptr<ITracerSink> sink);
 
@@ -81,7 +81,6 @@ inline bool Tracer::is_particle_active(const Particle& particle) const {
     }
 }
  
-
 }
 
 #else
