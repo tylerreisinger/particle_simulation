@@ -15,8 +15,12 @@
 
 #include "terminal_ui/Terminal.h"
 #include "terminal_ui/DensityPrinter.h"
+#include "terminal_ui/ParticlePrinter.h"
 
 int main(int argc, char** argv) {
+    std::ios_base::sync_with_stdio(false);
+    std::setvbuf(stdout, nullptr, _IOFBF, BUFSIZ);
+
     Grid grid(10, 10, 10, 10);
 
     auto rng = std::mt19937();
@@ -48,18 +52,20 @@ int main(int argc, char** argv) {
             std::move(interaction_factory)
         )
         .broadcast_charge_distribution(
-            std::uniform_real_distribution<QuantityType>(0.0, 1.0)
+            std::uniform_real_distribution<QuantityType>(1.0, 2.0)
         )
-        .execute(5);
+        .execute(2);
 
     grid.print_particle_density(std::cout, 0);
 
-    auto output = DensityPrinter(10, 10, {0, 0, 10, 10});
+    auto output = tui::DensityPrinter(10, 10, {0, 0, 10, 10});
+    auto output2 = tui::ParticlePrinter(20, 20, {0, 0, 10, 10});
 
     Simulation s(std::move(grid));
-    for(int i = 0; i < 500; ++i) {
+    for(int i = 0; i < 300; ++i) {
         s.do_frame();
-        output.draw_state(std::cout, s.get_particles());
+        output.print_grid(std::cout, s.get_particles());
+        output2.print_grid(std::cout, s.get_particles());
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 

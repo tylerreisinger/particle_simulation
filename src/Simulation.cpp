@@ -22,7 +22,7 @@ Simulation::Simulation(SpatialContainer&& grid):
 }
  
 void Simulation::do_frame() {
-    m_simulation_time.begin_frame(0.1);
+    m_simulation_time.begin_frame(0.05);
 
     std::cout << "===== Frame Start: t=" << m_simulation_time.current_simulation_time()
         << " =====\n";

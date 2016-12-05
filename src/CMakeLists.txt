@@ -25,8 +25,10 @@ endif()
 
 if(ENABLE_COLOR_CUI)
     set(CUI_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/terminal_ui/Terminal.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/terminal_ui/BasicGridPrinter.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/terminal_ui/DensityPrinter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/terminal_ui/ParticlePrinter.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/terminal_ui/Terminal.cpp
     PARENT_SCOPE)
 else()
     set(CUI_SOURCES PARENT_SCOPE)

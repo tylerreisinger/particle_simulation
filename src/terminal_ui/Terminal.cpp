@@ -172,7 +172,7 @@ void Terminal::set_formatting(const TerminalFormatting& formatting) {
     set_background_color(formatting.background_color()); 
 }
  
-Rgb::Rgb(uint8_t red, uint8_t green, uint8_t blue):
+constexpr Rgb::Rgb(uint8_t red, uint8_t green, uint8_t blue):
     m_red(red), m_green(green), m_blue(blue) {
 }
  

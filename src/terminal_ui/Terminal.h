@@ -52,25 +52,25 @@ enum class ColorPalette16 {
 
 class Rgb {
 public:
-    Rgb() = default;
-    Rgb(uint8_t red, uint8_t green, uint8_t blue);
+    constexpr Rgb() = default;
+    constexpr Rgb(uint8_t red, uint8_t green, uint8_t blue);
     ~Rgb() = default;
 
-    Rgb(const Rgb& other) = default;
-    Rgb(Rgb&& other) noexcept = default;
-    Rgb& operator =(const Rgb& other) = default;
-    Rgb& operator =(Rgb&& other) noexcept = default;
+    constexpr Rgb(const Rgb& other) = default;
+    constexpr Rgb(Rgb&& other) noexcept = default;
+    constexpr Rgb& operator =(const Rgb& other) = default;
+    constexpr Rgb& operator =(Rgb&& other) noexcept = default;
 
-    bool operator ==(const Rgb& rhs) const {
+    constexpr bool operator ==(const Rgb& rhs) const {
         return (m_red == rhs.m_red && m_green == rhs.m_green && m_blue == rhs.m_blue);
     }
-    bool operator !=(const Rgb& rhs) const {
+    constexpr bool operator !=(const Rgb& rhs) const {
         return !(*this == rhs);
     }
 
-    uint8_t red() const {return m_red;}
-    uint8_t green() const {return m_green;}
-    uint8_t blue() const {return m_blue;}
+    constexpr uint8_t red() const {return m_red;}
+    constexpr uint8_t green() const {return m_green;}
+    constexpr uint8_t blue() const {return m_blue;}
     void set_red(uint8_t red) {m_red = red;}
     void set_green(uint8_t green) {m_green = green;}
     void set_blue(uint8_t blue) {m_blue = blue;}
@@ -90,32 +90,32 @@ private:
 
 class Color256 {
 public:
-    explicit Color256(unsigned int palette_index):
+    constexpr explicit Color256(unsigned int palette_index):
         m_index(palette_index) {
     }
 
     ~Color256() = default;
 
-    Color256(const Color256& other) = default;
-    Color256(Color256&& other) noexcept = default;
-    Color256& operator =(const Color256& other) = default;
-    Color256& operator =(Color256&& other) noexcept = default;
+    constexpr Color256(const Color256& other) = default;
+    constexpr Color256(Color256&& other) noexcept = default;
+    constexpr Color256& operator =(const Color256& other) = default;
+    constexpr Color256& operator =(Color256&& other) noexcept = default;
 
-    bool operator ==(const Color256& rhs) const {
+    constexpr bool operator ==(const Color256& rhs) const {
         return m_index == rhs.m_index;
     }
-    bool operator !=(const Color256& rhs) const {
+    constexpr bool operator !=(const Color256& rhs) const {
         return !(*this == rhs);
     }
 
     void apply_foreground(Terminal& terminal) const;
     void apply_background(Terminal& terminal) const;
 
-    bool is_standard_color() const {return m_index <= 0x0F;}
-    bool is_extended_color() const {return (m_index > 0x0F && m_index <= 0xE7);}
-    bool is_grayscale() const {return (m_index > 0xE7);}
+    constexpr bool is_standard_color() const {return m_index <= 0x0F;}
+    constexpr bool is_extended_color() const {return (m_index > 0x0F && m_index <= 0xE7);}
+    constexpr bool is_grayscale() const {return (m_index > 0xE7);}
 
-    unsigned int palette_index() const {return m_index;}
+    constexpr unsigned int palette_index() const {return m_index;}
     void set_palette_index(unsigned int index) {
         assert(index < 255);
         assert(index >= 0);
@@ -125,7 +125,7 @@ public:
         return ColorFormat::Palette256;
     }
     
-    static Color256 make_grayscale(unsigned int index) {
+    static constexpr Color256 make_grayscale(unsigned int index) {
         assert(index < 24);
         return Color256(index + 0xE8);
     }
@@ -136,25 +136,25 @@ private:
 
 class Color16 {
 public:
-    Color16() = default;
-    Color16(ColorPalette16 color):
+    constexpr Color16() = default;
+    constexpr Color16(ColorPalette16 color):
         m_color_index(static_cast<unsigned int>(color)) {}
     ~Color16() = default;
 
-    Color16(const Color16& other) = default;
-    Color16(Color16&& other) noexcept = default;
-    Color16& operator =(const Color16& other) = default;
-    Color16& operator =(Color16&& other) noexcept = default;
+    constexpr Color16(const Color16& other) = default;
+    constexpr Color16(Color16&& other) noexcept = default;
+    constexpr Color16& operator =(const Color16& other) = default;
+    constexpr Color16& operator =(Color16&& other) noexcept = default;
 
-    bool operator ==(const Color16& rhs) const {
+    constexpr bool operator ==(const Color16& rhs) const {
         return (rhs.m_color_index == rhs.m_color_index);
     }
-    bool operator !=(const Color16& rhs) const {
+    constexpr bool operator !=(const Color16& rhs) const {
         return !(*this == rhs);
     }
 
-    unsigned int palette_index() const {return m_color_index;}
-    ColorPalette16 color() const {return static_cast<ColorPalette16>(m_color_index);}
+    constexpr unsigned int palette_index() const {return m_color_index;}
+    constexpr ColorPalette16 color() const {return static_cast<ColorPalette16>(m_color_index);}
     void set_palette_index(unsigned int idx) {
         assert(idx < 16);
         assert(idx >= 0);

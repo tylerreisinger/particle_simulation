@@ -4,7 +4,6 @@
 #include "../Vector2.h"
 #include "../CommonTypes.h"
 
-
 class Viewport {
 public:
     Viewport() = default;
@@ -26,6 +25,10 @@ public:
     PositionType y_min() const {return m_top_left.y;}
     PositionType y_max() const {return m_bottom_right.y;}
 
+    bool is_within(const SpatialVector& position) const {
+        return (position.x >= x_min() && position.x < x_max()
+                && position.y >= y_min() && position.y < y_max());
+    }
 
 private:
    SpatialVector m_top_left;
