@@ -23,6 +23,12 @@ Simulation::Simulation(SpatialContainer&& grid, double base_time_step):
 #endif
 }
  
+Simulation& Simulation::set_boundary_collision_resolver(
+        std::unique_ptr<IBoundaryCollisionResolver> resolver) {
+    m_boundary_collision_resolver = std::move(resolver); 
+    return *this;
+}
+ 
 void Simulation::do_frame() {
     m_simulation_time.begin_frame(m_base_time_step);
 
@@ -58,7 +64,8 @@ void Simulation::simulate_motion(Particle& particle,
 }
 
 std::unique_ptr<IBoundaryCollisionResolver> Simulation::make_default_boundary_resolver() {
-    return std::make_unique<BoundaryBounceResolver>();
+    constexpr PositionType BOUNCE_COEFFICIENT = 0.95;
+    return std::make_unique<BoundaryBounceResolver>(BOUNCE_COEFFICIENT);
 }
  
 void Simulation::on_particle_out_of_boundry(Particle& particle,

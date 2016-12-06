@@ -22,6 +22,12 @@ public:
     Simulation& operator =(const Simulation& other) = delete;
     Simulation& operator =(Simulation&& other) noexcept = delete;
 
+    Simulation& set_boundary_collision_resolver(
+            std::unique_ptr<IBoundaryCollisionResolver> resolver);
+    IBoundaryCollisionResolver& boundary_collision_resolver() {
+        return *m_boundary_collision_resolver;
+    }
+
     void do_frame();
 
     double base_time_step() const {return m_base_time_step;}

@@ -8,6 +8,9 @@
 
 using namespace tracing;
 
+BoundaryBounceResolver::BoundaryBounceResolver(PositionType bounce_coefficient):
+    m_bounce_coeff(bounce_coefficient) {}
+ 
 void BoundaryBounceResolver::resolve_border_collision(Simulation& simulation, Grid& grid,
         Particle& particle, SpatialVector& acceleration) const {
     double dt = simulation.simulation_time().time_delta();
@@ -28,6 +31,8 @@ void BoundaryBounceResolver::resolve_border_collision(Simulation& simulation, Gr
                 }
             ));
     }
+
+    particle.update_velocity(particle.next_velocity() * m_bounce_coeff);
 }
  
 void BoundaryBounceResolver::resolve_border_collision_recursive(Simulation& simulation, 
