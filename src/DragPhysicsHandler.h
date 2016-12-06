@@ -20,6 +20,9 @@ public:
     void set_drag_coefficient(PositionType value) {m_drag_coeff = value;}
     
 private:
+    PositionType exact_force_multiplier(double dt) const;
+    PositionType taylor_series_force_multiplier(double dt) const;
+
     PositionType m_drag_coeff = 0.001;    
 };
 

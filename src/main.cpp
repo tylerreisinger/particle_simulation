@@ -65,11 +65,11 @@ int main(int argc, char** argv) {
     auto output2 = tui::ParticlePrinter(20, 20, {0, 0, 10, 10});
 
     Simulation s(std::move(grid), 0.05);
-    for(int i = 0; i < 5000; ++i) {
+    for(int i = 0; i < 1000; ++i) {
         s.do_frame();
         output.print_grid(std::cout, s.get_particles());
         output2.print_grid(std::cout, s.get_particles());
-        std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(25));
     }
 
     return 0;

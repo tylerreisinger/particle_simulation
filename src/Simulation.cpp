@@ -115,7 +115,6 @@ void Simulation::advance_physics(Particle& particle, double dt, SpatialVector ac
     if(m_world_physics != nullptr) {
         auto world_force = 
             m_world_physics->compute_force(particle, *this, m_grid, acceleration);
-        std::cout << world_force << std::endl;
         acceleration += particle.acceleration_from_force(world_force);
     }
 
