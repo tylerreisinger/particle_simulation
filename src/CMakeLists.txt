@@ -1,5 +1,6 @@
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundaryBounceResolver.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/DragPhysicsHandler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Grid.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Particle.cpp

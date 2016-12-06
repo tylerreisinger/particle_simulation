@@ -3,6 +3,8 @@
 #include <iostream>
 
 #include "BoundaryBounceResolver.h"
+#include "DragPhysicsHandler.h"
+#include "IWorldPhysicsHandler.h"
 
 #ifdef TRACING
 #include "TracerConfig.h"
@@ -12,11 +14,11 @@ using tracing::TraceEventType;
 using tracing::TraceEvent;
 #endif
 
-
 Simulation::Simulation(SpatialContainer&& grid, double base_time_step):
         m_grid(std::move(grid)), m_base_time_step(base_time_step) {
 
     m_boundary_collision_resolver = make_default_boundary_resolver();
+    m_world_physics = make_default_world_physics();
 #ifdef TRACING
     m_tracer = build_tracer();
     setup_tracing();
@@ -27,6 +29,10 @@ Simulation& Simulation::set_boundary_collision_resolver(
         std::unique_ptr<IBoundaryCollisionResolver> resolver) {
     m_boundary_collision_resolver = std::move(resolver); 
     return *this;
+}
+ 
+Simulation::~Simulation() {
+ 
 }
  
 void Simulation::do_frame() {
@@ -68,6 +74,11 @@ std::unique_ptr<IBoundaryCollisionResolver> Simulation::make_default_boundary_re
     return std::make_unique<BoundaryBounceResolver>(BOUNCE_COEFFICIENT);
 }
  
+std::unique_ptr<IWorldPhysicsHandler> Simulation::make_default_world_physics() {
+    constexpr PositionType FRICTION_COEFFICIENT = 0.01; 
+    return std::make_unique<DragPhysicsHandler>(FRICTION_COEFFICIENT);
+}
+ 
 void Simulation::on_particle_out_of_boundry(Particle& particle,
         SpatialVector& acceleration) {
     PARTICLE_TRACER_EVENT(m_tracer, TraceEventType::WallCollideBegin, particle,
@@ -101,6 +112,13 @@ void Simulation::advance_physics(Particle& particle, double dt, SpatialVector ac
     PARTICLE_TRACER_EVENT(m_tracer, TraceEventType::ParticleFrameBegin, particle, 
             this, m_simulation_time)
         
+    if(m_world_physics != nullptr) {
+        auto world_force = 
+            m_world_physics->compute_force(particle, *this, m_grid, acceleration);
+        std::cout << world_force << std::endl;
+        acceleration += particle.acceleration_from_force(world_force);
+    }
+
     auto new_position = particle.next_position();
     auto new_velocity = particle.next_velocity();
     euler(particle, dt, acceleration, new_position, new_velocity);

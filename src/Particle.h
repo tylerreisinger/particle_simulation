@@ -121,6 +121,10 @@ public:
         return m_interaction->compute_force(target, *this);
     }
 
+    ForceType acceleration_from_force(const ForceType& force) {
+        return force / m_mass;
+    }
+
 private:
     std::vector<ChargeType> m_charges;
     DoubleBuffered<Vector2t> m_position = Vector2t(0, 0);

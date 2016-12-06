@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         .broadcast_charge_distribution(
             std::uniform_real_distribution<QuantityType>(0.0, 1.0)
         )
-        .generate(2);
+        .generate(10);
 
     grid.print_particle_density(std::cout, 0);
 

@@ -9,13 +9,15 @@
 
 #include "tracing/Tracer.h"
 
+class IWorldPhysicsHandler;
+
 class Simulation {
 public:
     using SpatialContainer = Grid;
 
     Simulation(SpatialContainer&& grid,
             double base_time_step = 1.0);
-    ~Simulation() = default;
+    ~Simulation();
 
     Simulation(const Simulation& other) = delete;
     Simulation(Simulation&& other) noexcept = delete;
@@ -54,6 +56,7 @@ private:
     void setup_tracing();
 #endif
     std::unique_ptr<IBoundaryCollisionResolver> make_default_boundary_resolver();
+    std::unique_ptr<IWorldPhysicsHandler> make_default_world_physics();
 
     void on_particle_out_of_boundry(Particle& particle, SpatialVector& acceleration);
 
@@ -67,6 +70,8 @@ private:
             SpatialVector& position, SpatialVector& velocity);
 
     std::unique_ptr<IBoundaryCollisionResolver> m_boundary_collision_resolver;
+    std::unique_ptr<IWorldPhysicsHandler> m_world_physics;
+
     SpatialContainer m_grid;        
     SimulationTime m_simulation_time;
     double m_base_time_step = 1.0;
