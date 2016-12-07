@@ -7,6 +7,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/ParticleParameters.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/PrototypalInteractionFactory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Simulation.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/SimulationRunner.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SimulationTime.cpp
     PARENT_SCOPE)
 

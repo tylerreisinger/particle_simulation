@@ -12,6 +12,7 @@
 
 #include "PrototypalInteractionFactory.h"
 #include "FunctionalParticleInteraction.h"
+#include "SimulationRunner.h"
 
 #include "terminal_ui/Terminal.h"
 #include "terminal_ui/DensityPrinter.h"
@@ -64,13 +65,18 @@ int main(int argc, char** argv) {
     auto output = tui::DensityPrinter(10, 10, {0, 0, 10, 10});
     auto output2 = tui::ParticlePrinter(20, 20, {0, 0, 10, 10});
 
-    Simulation s(std::move(grid), 0.05);
-    for(int i = 0; i < 1000; ++i) {
-        s.do_frame();
-        output.print_grid(std::cout, s.get_particles());
-        output2.print_grid(std::cout, s.get_particles());
-        //std::this_thread::sleep_for(std::chrono::milliseconds(25));
-    }
+    auto s = std::make_unique<Simulation>(std::move(grid), 0.05);
+    SimulationRunner runner(std::move(s));
+    runner.set_stopping_time(50.0);
+    runner.set_delay(std::chrono::milliseconds(25));
+
+    auto handler = runner.on_frame_end(
+        [&output, &output2](Simulation& sim, SimulationRunner& runner) {
+            output.print_grid(std::cout, sim.get_particles());
+            output2.print_grid(std::cout, sim.get_particles());
+        });
+
+    runner.run();
 
     return 0;
 }
