@@ -147,8 +147,14 @@ public:
         return (pos.x >= 0 && pos.y >= 0 && pos.x < m_width && pos.y < m_height);
     }
 
-    GridCell& cell(std::size_t x, std::size_t y);
-    GridCell& cell(std::size_t idx);
+    GridCell& cell(std::size_t x, std::size_t y) {
+        assert(x+y*m_xres < m_cells.size());
+        return m_cells[x + y*m_xres];
+    }
+    GridCell& cell(std::size_t idx) {
+        assert(idx < m_cells.size());
+        return m_cells[idx]; 
+    }
 
     Particle& get_particle_by_id(int id) {
         return m_particles.at(id)->particle();

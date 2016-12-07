@@ -46,16 +46,6 @@ void Grid::add(Particle&& particle) {
     m_insertList.emplace_back(std::make_unique<GridParticle>(std::move(particle))); 
 }
  
-GridCell& Grid::cell(std::size_t x, std::size_t y) { 
-    assert(x+y*m_xres < m_cells.size());
-    return m_cells[x + y*m_xres];
-}
- 
-GridCell& Grid::cell(std::size_t idx) {
-    assert(idx < m_cells.size());
-    return m_cells[idx]; 
-}
- 
 void Grid::next_frame() {
     apply_insert_list();
     apply_delete_list();
