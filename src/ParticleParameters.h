@@ -10,9 +10,7 @@
 
 class ParticleParameters {
 public:
-    ParticleParameters() = default;
-
-    ParticleParameters(const boost::optional<SpatialVector>& position,
+    ParticleParameters(const boost::optional<SpatialVector>& position = boost::none,
             const boost::optional<SpatialVector>& velocity = boost::none,
             boost::optional<QuantityType> radius = boost::none,
             boost::optional<QuantityType> mass = boost::none,

@@ -4,6 +4,7 @@
 #include <random>
 #include <functional>
 #include <cassert>
+#include <boost/optional/optional_io.hpp>
 
 #include "Vector2.h"
 #include "Particle.h"
@@ -135,7 +136,7 @@ private:
         auto radius = params.radius().value_or(m_radius_dist(m_rng));
         auto position = params.position().value_or(m_position_dist(m_rng));
         auto velocity = params.velocity().value_or(m_velocity_dist(m_rng));
-        Particle p(mass, radius, position, velocity, num_charges());
+        Particle p(radius, mass, position, velocity, num_charges());
         if(m_interaction_factory != nullptr) {
             auto interaction = m_interaction_factory->build_interaction(p);
             p.set_interaction(std::move(interaction));
