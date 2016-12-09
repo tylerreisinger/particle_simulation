@@ -143,7 +143,7 @@ void Simulation::advance_physics(Particle& particle, double dt, SpatialVector ac
  
 void Simulation::euler(Particle& particle, double dt, SpatialVector acceleration) {
     auto vel = particle.next_velocity() + acceleration*dt;
-    auto pos = particle.next_position() + particle.next_velocity()*dt; 
+    auto pos = particle.next_position() + vel*dt; 
 
     particle.update_velocity(vel);
     particle.update_position(pos);
