@@ -25,7 +25,7 @@ tracing::Tracer build_tracer() {
     auto plotting_formatter = std::make_shared<tracing::PlotTracerFormatter>();
 
     auto sink = std::make_unique<tracing::TracerSink<std::string>>(
-            cout_backend, formatter, std::make_shared<tracing::ParticleFilter>(1));
+            cout_backend, formatter);
 
     auto sink2 = std::make_unique<tracing::TracerSink<std::string>>(
             file_backend1, plotting_formatter, 

@@ -58,7 +58,19 @@ int main(int argc, char** argv) {
         .broadcast_charge_distribution(
             std::uniform_real_distribution<QuantityType>(0.0, 1.0)
         )
-        .generate(10);
+        .populate({
+            ParticleParameters()
+                .set_mass(50)
+                .set_velocity({0, 0})
+                .set_position({5, 5})
+                .set_charge(0, 0.5),
+            ParticleParameters()
+                .set_mass(1)
+                .set_position({7, 5})
+                .set_velocity({0, (float)std::sqrt(0.125000)})
+                .set_charge(0, 0.5)
+        });
+        //.generate(5);
 
     grid.print_particle_density(std::cout, 0);
 
@@ -67,8 +79,8 @@ int main(int argc, char** argv) {
 
     auto s = std::make_unique<Simulation>(std::move(grid), 0.05);
     SimulationRunner runner(std::move(s));
-    runner.set_stopping_time(50.0);
-    runner.set_delay(std::chrono::milliseconds(25));
+    runner.set_stopping_time(150.0);
+    runner.set_delay(std::chrono::milliseconds(5));
 
     auto handler = runner.on_frame_end(
         [&output, &output2](Simulation& sim, SimulationRunner& runner) {

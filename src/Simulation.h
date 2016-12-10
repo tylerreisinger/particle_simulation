@@ -10,6 +10,7 @@
 #include "tracing/Tracer.h"
 
 class IWorldPhysicsHandler;
+class IMotionIntegrator;
 
 class Simulation {
 public:
@@ -47,6 +48,10 @@ public:
 
     void simulate_motion(Particle& particle, double dt, 
             const SpatialVector& acceleration);
+    void simulate_motion(Particle& particle, double dt, SpatialVector acceleration,
+            SpatialVector& position, SpatialVector& velocity);
+
+    ForceType compute_acceleration(const Particle& particle);
 
 #ifdef TRACING
     const tracing::Tracer& tracer() const {return m_tracer;}
@@ -57,6 +62,7 @@ private:
 #endif
     std::unique_ptr<IBoundaryCollisionResolver> make_default_boundary_resolver();
     std::unique_ptr<IWorldPhysicsHandler> make_default_world_physics();
+    std::unique_ptr<IMotionIntegrator> make_default_integrator();
 
     void on_particle_out_of_boundry(Particle& particle, SpatialVector& acceleration);
 
@@ -65,12 +71,12 @@ private:
             const ForceType& force) const;
 
     void advance_physics(Particle& particle, double dt, SpatialVector acceleration);
-    void euler(Particle& particle, double dt, SpatialVector acceleration);
-    void euler(const Particle& particle, double dt, SpatialVector acceleration,
+    void advance_physics(Particle& particle, double dt, SpatialVector acceleration,
             SpatialVector& position, SpatialVector& velocity);
 
     std::unique_ptr<IBoundaryCollisionResolver> m_boundary_collision_resolver;
     std::unique_ptr<IWorldPhysicsHandler> m_world_physics;
+    std::unique_ptr<IMotionIntegrator> m_integrator;
 
     SpatialContainer m_grid;        
     SimulationTime m_simulation_time;

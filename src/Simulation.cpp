@@ -5,6 +5,7 @@
 #include "BoundaryBounceResolver.h"
 #include "DragPhysicsHandler.h"
 #include "IWorldPhysicsHandler.h"
+#include "EulerMotionIntegrator.h"
 
 #ifdef TRACING
 #include "TracerConfig.h"
@@ -19,6 +20,7 @@ Simulation::Simulation(SpatialContainer&& grid, double base_time_step):
 
     m_boundary_collision_resolver = make_default_boundary_resolver();
     m_world_physics = make_default_world_physics();
+    m_integrator = make_default_integrator();
 #ifdef TRACING
     m_tracer = build_tracer();
     setup_tracing();
@@ -48,8 +50,7 @@ void Simulation::do_frame() {
         for(auto& item : cell) {
             auto& particle = item;
 
-            auto acceleration = compute_acceleration_from_force(particle.particle(),
-                    compute_exact_force(particle.particle()));
+            auto acceleration = compute_acceleration(particle.particle());
 
             advance_physics(particle.particle(), m_simulation_time.time_delta(), 
                     acceleration);
@@ -66,7 +67,13 @@ void Simulation::do_frame() {
  
 void Simulation::simulate_motion(Particle& particle, 
         double dt, const SpatialVector& acceleration) {
-    euler(particle, dt, acceleration); 
+    m_integrator->advance_motion(particle, dt, acceleration);
+}
+
+void Simulation::simulate_motion(Particle& particle, double dt, 
+        SpatialVector acceleration, SpatialVector& position, 
+        SpatialVector& velocity) {
+    m_integrator->advance_motion(particle, dt, acceleration, position, velocity);
 }
 
 std::unique_ptr<IBoundaryCollisionResolver> Simulation::make_default_boundary_resolver() {
@@ -77,6 +84,15 @@ std::unique_ptr<IBoundaryCollisionResolver> Simulation::make_default_boundary_re
 std::unique_ptr<IWorldPhysicsHandler> Simulation::make_default_world_physics() {
     constexpr PositionType FRICTION_COEFFICIENT = 0.01; 
     return std::make_unique<DragPhysicsHandler>(FRICTION_COEFFICIENT);
+}
+ 
+std::unique_ptr<IMotionIntegrator> Simulation::make_default_integrator() {
+    return std::make_unique<EulerMotionIntegrator>(); 
+}
+ 
+ForceType Simulation::compute_acceleration(const Particle& particle) {
+    auto force = compute_exact_force(particle);
+    return compute_acceleration_from_force(particle, force); 
 }
  
 void Simulation::on_particle_out_of_boundry(Particle& particle,
@@ -120,7 +136,8 @@ void Simulation::advance_physics(Particle& particle, double dt, SpatialVector ac
 
     auto new_position = particle.next_position();
     auto new_velocity = particle.next_velocity();
-    euler(particle, dt, acceleration, new_position, new_velocity);
+
+    simulate_motion(particle, dt, acceleration, new_position, new_velocity);
 
     if(!m_grid.is_point_within(new_position)) {
         //If we detect a boundary collision, we discard the simulation and
@@ -141,24 +158,10 @@ void Simulation::advance_physics(Particle& particle, double dt, SpatialVector ac
             this, m_simulation_time);
 }
  
-void Simulation::euler(Particle& particle, double dt, SpatialVector acceleration) {
-    auto vel = particle.next_velocity() + acceleration*dt;
-    auto pos = particle.next_position() + vel*dt; 
-
-    particle.update_velocity(vel);
-    particle.update_position(pos);
-}
-
-void Simulation::euler(const Particle& particle, double dt, SpatialVector acceleration, 
-        SpatialVector& position, SpatialVector& velocity) { 
-    velocity = velocity + acceleration*dt;
-    position = position + particle.next_velocity()*dt; 
-}
- 
 #ifdef TRACING
 void Simulation::setup_tracing() {
     m_tracer.enable_particle_tracing(m_grid.get_particle_by_id(1));
 }
 #endif
- 
+
  
