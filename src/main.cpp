@@ -27,8 +27,9 @@ int main(int argc, char** argv) {
     auto rng = std::mt19937();
 
     auto force_fn = 
-        [](const Particle& target, const Particle& src) {
-            auto r = (target.position() - src.position());
+        [](const Particle& target, const Particle& src, const SpatialVector& src_position, 
+                const SpatialVector& src_velocity) {
+            auto r = (target.position() - src_position);
             auto dist = r.magnitude_squared();
             dist = std::max(dist, target.radius()*target.radius());
             return (src.get_charge(0)*target.get_charge(0)) 
@@ -58,9 +59,9 @@ int main(int argc, char** argv) {
         .broadcast_charge_distribution(
             std::uniform_real_distribution<QuantityType>(0.0, 1.0)
         )
-        .populate({
+        /*.populate({
             ParticleParameters()
-                .set_mass(50)
+                .set_mass(150'000)
                 .set_velocity({0, 0})
                 .set_position({5, 5})
                 .set_charge(0, 0.5),
@@ -69,17 +70,17 @@ int main(int argc, char** argv) {
                 .set_position({7, 5})
                 .set_velocity({0, (float)std::sqrt(0.125000)})
                 .set_charge(0, 0.5)
-        });
-        //.generate(5);
+        });*/
+        .generate(5);
 
     grid.print_particle_density(std::cout, 0);
 
     auto output = tui::DensityPrinter(10, 10, {0, 0, 10, 10});
     auto output2 = tui::ParticlePrinter(20, 20, {0, 0, 10, 10});
 
-    auto s = std::make_unique<Simulation>(std::move(grid), 0.05);
+    auto s = std::make_unique<Simulation>(std::move(grid), 0.2);
     SimulationRunner runner(std::move(s));
-    runner.set_stopping_time(150.0);
+    runner.set_stopping_time(2000.0);
     runner.set_delay(std::chrono::milliseconds(5));
 
     auto handler = runner.on_frame_end(

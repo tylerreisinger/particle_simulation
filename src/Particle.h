@@ -120,6 +120,13 @@ public:
         assert(m_interaction != nullptr);
         return m_interaction->compute_force(target, *this);
     }
+    ForceType compute_force(const Particle& target,
+            const SpatialVector& updated_position, 
+            const SpatialVector& updated_velocity) const {
+        assert(m_interaction != nullptr);
+        return m_interaction->compute_force(target, *this, 
+                updated_position, updated_velocity);
+    }
 
     ForceType acceleration_from_force(const ForceType& force) {
         return force / m_mass;

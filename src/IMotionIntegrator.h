@@ -5,25 +5,17 @@
 #include "CommonTypes.h"
 #include "Particle.h"
 
+class Simulation;
 
 class IMotionIntegrator {
 public:
     IMotionIntegrator() = default;
     virtual ~IMotionIntegrator() = default;
 
-    virtual void advance_motion(Particle& particle, double dt,
+    virtual void advance_motion(Simulation& simulation, Particle& particle, double dt,
             const SpatialVector& acceleration, SpatialVector& position,
             SpatialVector& velocity) const = 0;
 
-    void advance_motion(Particle& particle, double dt,
-            const SpatialVector& acceleration) {
-        auto pos = particle.next_position();
-        auto vel = particle.next_velocity();
-        advance_motion(particle, dt, acceleration, pos, vel);
-
-        particle.update_position(pos);
-        particle.update_velocity(vel);
-    }
 private:
 };
 

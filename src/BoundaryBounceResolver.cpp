@@ -1,5 +1,7 @@
 #include "BoundaryBounceResolver.h"
 
+#include <cassert>
+
 #include "Grid.h"
 #include "Simulation.h"
 #include "Vector2.h"
@@ -31,6 +33,8 @@ void BoundaryBounceResolver::resolve_border_collision(Simulation& simulation, Gr
                 }
             ));
     }
+
+    assert(grid.is_point_within(particle.next_position()));
 
     particle.update_velocity(particle.next_velocity() * m_bounce_coeff);
 }

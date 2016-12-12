@@ -51,7 +51,10 @@ public:
     void simulate_motion(Particle& particle, double dt, SpatialVector acceleration,
             SpatialVector& position, SpatialVector& velocity);
 
-    ForceType compute_acceleration(const Particle& particle);
+    ForceType compute_acceleration(Particle& particle);
+    ForceType compute_acceleration(Particle& particle, 
+            const SpatialVector& updated_position, 
+            const SpatialVector& updated_velocity);
 
 #ifdef TRACING
     const tracing::Tracer& tracer() const {return m_tracer;}
@@ -66,7 +69,8 @@ private:
 
     void on_particle_out_of_boundry(Particle& particle, SpatialVector& acceleration);
 
-    ForceType compute_exact_force(const Particle& particle);
+    ForceType compute_exact_force(const Particle& particle, 
+            const SpatialVector& updated_position, const SpatialVector& updated_velocity);
     ForceType compute_acceleration_from_force(const Particle& particle, 
             const ForceType& force) const;
 

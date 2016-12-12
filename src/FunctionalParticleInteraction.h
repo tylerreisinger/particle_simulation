@@ -7,6 +7,7 @@
 #include "ParticleInteraction.h"
 #include "Vector2.h"
 #include "CommonTypes.h"
+#include "Particle.h"
 
 template <typename Fn, typename Enable = void>
 class FunctionalParticleInteractionHelper;
@@ -17,6 +18,7 @@ public:
     FunctionalParticleInteraction(Fn&& force_function);
     FunctionalParticleInteraction(std::vector<ChargeIndexType> charges, 
             Fn&& force_function);
+
     virtual ~FunctionalParticleInteraction() = default;
 
     FunctionalParticleInteraction(const FunctionalParticleInteraction& other) = default;
@@ -24,7 +26,12 @@ public:
     FunctionalParticleInteraction& operator =(const FunctionalParticleInteraction& other) = default;
     FunctionalParticleInteraction& operator =(FunctionalParticleInteraction&& other) noexcept = default;
 
-    virtual ForceType compute_force(const Particle& target, const Particle& src) const override;    
+    virtual ForceType compute_force(const Particle& target, 
+            const Particle& src) const override;    
+    virtual ForceType compute_force(const Particle& target, const Particle& src,
+            const SpatialVector& src_position, 
+            const SpatialVector& src_velocity) const override;
+
     virtual std::vector<ChargeIndexType> required_charges() const override {
         return m_charge_indices;
     }
@@ -78,7 +85,14 @@ inline FunctionalParticleInteraction<Fn>::FunctionalParticleInteraction(
 template <typename Fn>
 inline ForceType FunctionalParticleInteraction<Fn>::compute_force(
         const Particle& target, const Particle& src) const {
-    return m_fn(target, src); 
+    return m_fn(target, src, src.next_position(), src.next_velocity()); 
+}
+ 
+template<typename Fn>
+inline ForceType FunctionalParticleInteraction<Fn>::compute_force(const Particle& target, 
+        const Particle& src, const SpatialVector& position, 
+        const SpatialVector& velocity) const {
+    return m_fn(target, src, position, velocity); 
 }
  
 #endif

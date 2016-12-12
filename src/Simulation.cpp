@@ -67,13 +67,17 @@ void Simulation::do_frame() {
  
 void Simulation::simulate_motion(Particle& particle, 
         double dt, const SpatialVector& acceleration) {
-    m_integrator->advance_motion(particle, dt, acceleration);
+    auto position = particle.next_position();
+    auto velocity = particle.next_velocity();
+    m_integrator->advance_motion(*this, particle, dt, acceleration, position, velocity);
+    particle.update_position(position);
+    particle.update_velocity(velocity);
 }
 
 void Simulation::simulate_motion(Particle& particle, double dt, 
         SpatialVector acceleration, SpatialVector& position, 
         SpatialVector& velocity) {
-    m_integrator->advance_motion(particle, dt, acceleration, position, velocity);
+    m_integrator->advance_motion(*this, particle, dt, acceleration, position, velocity);
 }
 
 std::unique_ptr<IBoundaryCollisionResolver> Simulation::make_default_boundary_resolver() {
@@ -82,7 +86,7 @@ std::unique_ptr<IBoundaryCollisionResolver> Simulation::make_default_boundary_re
 }
  
 std::unique_ptr<IWorldPhysicsHandler> Simulation::make_default_world_physics() {
-    constexpr PositionType FRICTION_COEFFICIENT = 0.01; 
+    constexpr PositionType FRICTION_COEFFICIENT = 0.00; 
     return std::make_unique<DragPhysicsHandler>(FRICTION_COEFFICIENT);
 }
  
@@ -90,9 +94,25 @@ std::unique_ptr<IMotionIntegrator> Simulation::make_default_integrator() {
     return std::make_unique<EulerMotionIntegrator>(); 
 }
  
-ForceType Simulation::compute_acceleration(const Particle& particle) {
-    auto force = compute_exact_force(particle);
-    return compute_acceleration_from_force(particle, force); 
+ForceType Simulation::compute_acceleration(Particle& particle) {
+    return compute_acceleration(particle, particle.next_position(),
+            particle.next_velocity());
+}
+ 
+ForceType Simulation::compute_acceleration(Particle& particle, 
+    const SpatialVector& updated_position, const SpatialVector& updated_velocity) {
+         
+    auto force = compute_exact_force(particle, updated_position, updated_velocity);
+
+    if(m_world_physics != nullptr) {
+        auto world_force = 
+            m_world_physics->compute_force(particle, *this, m_grid);
+        force += world_force;
+    }
+
+    auto acceleration = compute_acceleration_from_force(particle, force);
+
+    return acceleration; 
 }
  
 void Simulation::on_particle_out_of_boundry(Particle& particle,
@@ -107,13 +127,14 @@ void Simulation::on_particle_out_of_boundry(Particle& particle,
             this, m_simulation_time);
 }
 
-ForceType Simulation::compute_exact_force(const Particle& particle) {
+ForceType Simulation::compute_exact_force(const Particle& particle,
+        const SpatialVector& position, const SpatialVector& velocity) {
     auto force = ForceType::zero();
 
     for(auto& item : m_grid) {
         auto& target = *item.second;
         if(&target.particle() == &particle) continue;
-        force += particle.compute_force(target.particle());
+        force += particle.compute_force(target.particle(), position, velocity);
     } 
 
     return force;
@@ -128,12 +149,6 @@ void Simulation::advance_physics(Particle& particle, double dt, SpatialVector ac
     PARTICLE_TRACER_EVENT(m_tracer, TraceEventType::ParticleFrameBegin, particle, 
             this, m_simulation_time)
         
-    if(m_world_physics != nullptr) {
-        auto world_force = 
-            m_world_physics->compute_force(particle, *this, m_grid, acceleration);
-        acceleration += particle.acceleration_from_force(world_force);
-    }
-
     auto new_position = particle.next_position();
     auto new_velocity = particle.next_velocity();
 

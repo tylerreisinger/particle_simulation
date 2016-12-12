@@ -14,7 +14,7 @@ public:
     DragPhysicsHandler& operator =(DragPhysicsHandler&& other) noexcept = default;
 
     virtual ForceType compute_force(Particle& particle, Simulation& simulation,
-            Grid& grid, const SpatialVector& acceleration) const override;
+            Grid& grid) const override;
 
     PositionType drag_coefficient() const {return m_drag_coeff;}
     void set_drag_coefficient(PositionType value) {m_drag_coeff = value;}

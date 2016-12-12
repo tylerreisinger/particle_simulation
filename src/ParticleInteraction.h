@@ -14,8 +14,10 @@ public:
     virtual ~IParticleInteraction() {};
 
     virtual ForceType compute_force(const Particle& target, const Particle& src) const = 0;
-    virtual std::vector<ChargeIndexType> required_charges() const {return {};}
+    virtual ForceType compute_force(const Particle& target, const Particle& src,
+            const SpatialVector& position, const SpatialVector& velocity) const = 0;
 
+    virtual std::vector<ChargeIndexType> required_charges() const {return {};}
     virtual void bind_charges(std::vector<ChargeIndexType> charge_indices) = 0;
 };
 

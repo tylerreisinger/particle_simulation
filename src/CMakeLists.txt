@@ -10,6 +10,7 @@ set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Simulation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SimulationRunner.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/SimulationTime.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/VelocityVerletIntegrator.cpp
     PARENT_SCOPE)
 
 if(ENABLE_TRACING)

@@ -13,7 +13,7 @@ public:
     EulerMotionIntegrator& operator =(const EulerMotionIntegrator& other) = delete;
     EulerMotionIntegrator& operator =(EulerMotionIntegrator&& other) noexcept = default;
 
-    virtual void advance_motion(Particle& particle, double dt,
+    virtual void advance_motion(Simulation& simulation, Particle& particle, double dt,
             const SpatialVector& acceleration, SpatialVector& position,
             SpatialVector& velocity) const override;
     

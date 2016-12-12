@@ -10,7 +10,7 @@ DragPhysicsHandler::DragPhysicsHandler(PositionType drag_coefficient):
 }
  
 ForceType DragPhysicsHandler::compute_force(Particle& particle, 
-        Simulation& simulation, Grid& grid, const SpatialVector& acceleration) const {
+        Simulation& simulation, Grid& grid) const {
     
     auto dt = simulation.simulation_time().time_delta();
     auto vel = particle.velocity(); 
