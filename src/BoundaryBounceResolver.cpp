@@ -1,7 +1,6 @@
 #include "BoundaryBounceResolver.h"
 
 #include <cassert>
-#include <iostream>
 
 #include "Grid.h"
 #include "Simulation.h"
@@ -11,8 +10,9 @@
 
 using namespace tracing;
 
-BoundaryBounceResolver::BoundaryBounceResolver(PositionType bounce_coefficient):
-    m_bounce_coeff(bounce_coefficient) {}
+BoundaryBounceResolver::BoundaryBounceResolver(PositionType bounce_coefficient,
+        int division_levels):
+    m_bounce_coeff(bounce_coefficient), m_division_levels(division_levels) {}
  
 void BoundaryBounceResolver::resolve_border_collision(Simulation& simulation, 
         Grid& grid, Particle& particle, SpatialVector& acceleration) const {
@@ -51,11 +51,6 @@ void BoundaryBounceResolver::resolve_border_collision_recursive(Simulation& simu
         particle, grid, acc, remaining_time, next_position,
         next_velocity);    
 
-    /*std::cout << "\tFinal division: \n\tt: uncertainty: [" 
-        << current_min_time << ", " << current_max_time
-        << "]  final: " << end_dt
-        << " -- " << "pos=" << next_position << std::endl;*/
-
     double end_dt = results.end_time;
 
     simulation.simulate_motion(particle, end_dt, acc, 
@@ -63,20 +58,12 @@ void BoundaryBounceResolver::resolve_border_collision_recursive(Simulation& simu
 
     remaining_time -= end_dt;
 
-    std::cout << "\t\tPre-Interp: " << next_position << ", " << next_velocity
-        << "\n";
 
     auto result = 
         interpolate_to_boundary(
             simulation, particle, grid, remaining_time, next_position,
             next_velocity);
     std::tie(next_position, next_velocity) = result;
-
-    std::cout << "\t\tPost-Interp: " << next_position << ", " << next_velocity
-        << "\n";
-
-    //std::cout << "\tCorrected Endpoint: pos=" << next_position << " -- vel="
-    //    << next_velocity << "\n";
 
     PARTICLE_MOTION_TRACER_EVENT(simulation.tracer(), 
             TraceEventType::MotionParamsUpdated, particle,
@@ -89,7 +76,6 @@ void BoundaryBounceResolver::resolve_border_collision_recursive(Simulation& simu
         ));
 
     if(remaining_time >= 0) {
-        std::cout << "\tRemaining Time: " << remaining_time << "\n";
         if(!try_simulate_remainder(simulation, particle, grid, acceleration, 
                 remaining_time, next_position, next_velocity)) {
             resolve_border_collision_recursive(simulation, grid, particle,
@@ -154,14 +140,6 @@ std::tuple<SpatialVector, SpatialVector>
         y_time = (grid.height() - next_position.y) / next_velocity.y;
     }
 
-    /*auto dx_left = std::abs(next_position.x);
-    auto dx_right = std::abs(next_position.x - grid.width());
-    auto dy_top = std::abs(next_position.y);
-    auto dy_bottom = std::abs(next_position.y - grid.height());
-
-    auto dx_min = std::min(dx_left, dx_right);
-    auto dy_min = std::min(dy_top, dy_bottom);*/
-
     if(std::abs(x_time) < std::abs(y_time)) {
         if(x_time > remaining_time) {
             x_time = remaining_time;
@@ -194,51 +172,7 @@ std::tuple<SpatialVector, SpatialVector>
     }
     next_position = grid.clip_outer_boundary(next_position);
 
-    /*
-    double time = 0.0;
-    auto vel = next_velocity;
-    auto pos = next_position;
-    if(dx_min < dy_min) {
-        if(dx_left < dx_right) {
-            time = -pos.x / vel.x; 
-            std::cout << "Interpolation: dt=" << time << "; pos="
-                << next_position;
-            next_position.y += time*vel.y;
-            next_position.x = 0.0;
-            std::cout << "->" << next_position << "\n";
-        } else {
-            time = (grid.width() - pos.x) / vel.x;
-            std::cout << "Interpolation: dt=" << time << "; pos="
-                << next_position;
-            next_position.y += time*vel.y;
-            next_position.x = grid.width() - 1e-6;
-            std::cout << "->" << next_position << "\n";
-        }
-
-        next_velocity.x = -next_velocity.x;
-        remaining_time -= time;
-    } else {
-        if(dy_top < dy_bottom) {
-            time = -pos.y / vel.y;
-            std::cout << "Interpolation: dt=" << time << "; pos="
-                << next_position;
-            next_position.x += time*vel.x;
-            next_position.y = 0.0;    
-            std::cout << "->" << next_position << "\n";
-        } else {
-            time = (grid.height() - pos.y) / vel.y;
-            std::cout << "Interpolation: dt=" << time << "; pos="
-                << next_position;
-            next_position.x += time*vel.x;
-            next_position.y = grid.height() - 1e-6;    
-            std::cout << "->" << next_position << "\n";
-        }
-        next_velocity.y = -next_velocity.y;
-        remaining_time -= time;
-    }*/
-
     assert(grid.is_point_within(next_position));
-    std::cout << "\tRemaining time: " << remaining_time << std::endl;
 
     return std::make_tuple(next_position, next_velocity);
 }
@@ -255,29 +189,18 @@ SubdivideResults BoundaryBounceResolver::boundary_collision_subdivide(
     auto next_position = particle.next_position();
     auto next_velocity = particle.next_velocity();
 
-    static constexpr int ITERATION_DEPTH = 3;
-
-    //std::cout << "WALL COLLISION START: \n";
-    //std::cout << "\tInitial: pos=" << particle.next_position() <<
-    //    " -- vel=" << particle.next_velocity() << "\n";
-
-    for(int i = 0; i < ITERATION_DEPTH; ++i) {
+    for(int i = 0; i < m_division_levels; ++i) {
         next_position = particle.next_position();
         next_velocity = particle.next_velocity();
 
         next_dt = (current_max_time + current_min_time) * 0.5;
-        //std::cout << "\tdt = " << next_dt << "\n";
         simulation.simulate_motion(particle, next_dt, acceleration, 
                 next_position, next_velocity);
 
-        //std::cout << "\tpos=" << particle.next_position() << "->" << next_position
-        //    << "\n";
         if(!grid.is_point_within(next_position)) {
-            //std::cout << "\tOutside\n";
             current_max_time = next_dt; 
             end_dt = (current_max_time + current_min_time) * 0.5;
         } else {
-            //std::cout << "\tInside\n";
             current_min_time = next_dt; 
             end_dt = (current_max_time + current_min_time) * 0.5;
         }

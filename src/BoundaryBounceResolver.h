@@ -17,7 +17,8 @@ struct SubdivideResults {
 
 class BoundaryBounceResolver: public IBoundaryCollisionResolver {
 public:
-    BoundaryBounceResolver(PositionType bounce_coefficient = 1.0);
+    BoundaryBounceResolver(PositionType bounce_coefficient = 1.0,
+        int division_levels=3);
     virtual ~BoundaryBounceResolver() = default;
 
     BoundaryBounceResolver(const BoundaryBounceResolver& other) = delete;
@@ -56,6 +57,7 @@ private:
             double& remaining_time) const;
 
     PositionType m_bounce_coeff = 1.00;
+    int m_division_levels = 3;
 };
 
 #endif
