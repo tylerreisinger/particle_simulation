@@ -3,7 +3,17 @@
 
 #include "IBoundaryCollisionResolver.h"
 
+#include <tuple>
+
 #include "CommonTypes.h"
+
+struct SubdivideResults {
+    double min_time;
+    double max_time;
+    double end_time;
+    SpatialVector final_pos;
+    SpatialVector final_vel;
+};
 
 class BoundaryBounceResolver: public IBoundaryCollisionResolver {
 public:
@@ -21,8 +31,27 @@ public:
     PositionType bounce_coefficient() const {return m_bounce_coeff;}
     void set_bounce_coefficient(PositionType value) {m_bounce_coeff = value;}
 
-private: 
+private:
+
     void resolve_border_collision_recursive(Simulation& simulation, Grid& grid,
+            Particle& particle, SpatialVector& acceleration,
+            double& remaining_time, int recursion_count=0) const;
+
+    bool try_simulate_remainder(Simulation& simulation, Particle& particle,
+            Grid& grid, SpatialVector& acceleration, double& remaining_time,
+            const SpatialVector& start_pos, const SpatialVector& start_vel) const;
+
+    std::tuple<SpatialVector, SpatialVector> interpolate_to_boundary(
+            Simulation& simulation, Particle& particle,
+            Grid& grid, double& remaining_time, const SpatialVector& start_pos,
+            const SpatialVector& start_vel) const;
+
+    SubdivideResults boundary_collision_subdivide(Simulation& simulation,
+            Particle& particle, Grid& grid, SpatialVector& acceleration,
+            double& remaining_time, const SpatialVector& position,
+            const SpatialVector& velocity) const;
+
+    void resolve_border_collision_recursive2(Simulation& simulation, Grid& grid,
             Particle& particle, SpatialVector& acceleration,
             double& remaining_time) const;
 

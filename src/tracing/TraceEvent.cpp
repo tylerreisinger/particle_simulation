@@ -31,6 +31,8 @@ std::string to_string(tracing::TraceEventType type) {
         return "WallCollideEnd";
     case TraceEventType::WallBounce:
         return "WallBounce";
+    case TraceEventType::CollisionEnergyLoss:
+        return "CollisionEnergyLoss";
     case TraceEventType::SimulateRemainder:
         return "SimulateRemainder";
     case TraceEventType::MotionParamsUpdated:

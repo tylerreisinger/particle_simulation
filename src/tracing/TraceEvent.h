@@ -21,6 +21,7 @@ enum class TraceEventType {
     WallCollideBegin,
     WallCollideEnd,
     WallBounce,
+    CollisionEnergyLoss,
     SimulateRemainder,
     MotionParamsUpdated,
 };
@@ -146,6 +147,7 @@ private:
     SpatialVector m_end_vel;
 };
 
+std::string to_string(TraceEventType type);
 std::ostream& operator <<(std::ostream& stream, TraceEventType type);
 
 }

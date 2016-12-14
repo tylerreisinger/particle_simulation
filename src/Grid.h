@@ -143,6 +143,18 @@ public:
         return x + y*m_xres;
     }
 
+    SpatialVector clip_outer_boundary(const SpatialVector& pos) const {
+        static constexpr PositionType epsilon = 1e-6;
+        auto out_pos = pos;
+        if(pos.x >= width()) {
+            out_pos.x = width() - epsilon;
+        }
+        if(pos.y >= height()) {
+            out_pos.y = height() - epsilon;
+        }
+        return out_pos;
+    }
+
     bool is_point_within(const SpatialVector& pos) const {
         return (pos.x >= 0 && pos.y >= 0 && pos.x < m_width && pos.y < m_height);
     }

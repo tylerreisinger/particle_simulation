@@ -6,6 +6,7 @@
 #include "DragPhysicsHandler.h"
 #include "IWorldPhysicsHandler.h"
 #include "EulerMotionIntegrator.h"
+#include "VelocityVerletIntegrator.h"
 
 #ifdef TRACING
 #include "TracerConfig.h"
@@ -91,7 +92,7 @@ std::unique_ptr<IWorldPhysicsHandler> Simulation::make_default_world_physics() {
 }
  
 std::unique_ptr<IMotionIntegrator> Simulation::make_default_integrator() {
-    return std::make_unique<EulerMotionIntegrator>(); 
+    return std::make_unique<VelocityVerletIntegrator>(); 
 }
  
 ForceType Simulation::compute_acceleration(Particle& particle) {

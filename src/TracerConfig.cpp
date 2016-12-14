@@ -19,6 +19,8 @@ tracing::Tracer build_tracer() {
         std::ofstream("particle_trace.txt"));
     auto file_backend2 = std::make_shared<tracing::FileSinkBackend>(
         std::ofstream("particle_trace2.txt"));
+    auto file_backend3 = std::make_shared<tracing::FileSinkBackend>(
+        std::ofstream("particle_trace3.txt"));
 
     auto formatter = std::make_shared<tracing::TextTracerFormatter>();
 
@@ -35,11 +37,16 @@ tracing::Tracer build_tracer() {
             file_backend2, plotting_formatter, 
             std::make_shared<tracing::ParticleFilter>(1));
 
+    auto sink4 = std::make_unique<tracing::TracerSink<std::string>>(
+            file_backend3, plotting_formatter, 
+            std::make_shared<tracing::ParticleFilter>(2));
+
     tracer.attach_sink(std::move(sink));
     tracer.attach_sink(std::move(sink2));
     tracer.attach_sink(std::move(sink3));
+    tracer.attach_sink(std::move(sink4));
 
-    tracer.enable_particle_tracing({0, 1});
+    tracer.enable_particle_tracing({0, 1, 2});
 
     return tracer;
 }
