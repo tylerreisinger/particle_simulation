@@ -199,11 +199,10 @@ SubdivideResults BoundaryBounceResolver::boundary_collision_subdivide(
 
         if(!grid.is_point_within(next_position)) {
             current_max_time = next_dt; 
-            end_dt = (current_max_time + current_min_time) * 0.5;
         } else {
             current_min_time = next_dt; 
-            end_dt = (current_max_time + current_min_time) * 0.5;
         }
+        end_dt = (current_max_time + current_min_time) * 0.5;
     }
 
     SubdivideResults results;
