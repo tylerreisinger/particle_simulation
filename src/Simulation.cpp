@@ -52,6 +52,7 @@ void Simulation::do_frame() {
             auto& particle = item;
 
             auto acceleration = compute_acceleration(particle.particle());
+            particle.particle().set_acceleration(acceleration);
 
             advance_physics(particle.particle(), m_simulation_time.time_delta(), 
                     acceleration);

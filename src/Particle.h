@@ -53,6 +53,7 @@ public:
     void apply_update() {
         m_position.apply_update();
         m_velocity.apply_update();
+        m_last_frame_acceleration = m_current_frame_acceleration;
     }
 
     const Vector2t& position() const {
@@ -103,6 +104,19 @@ public:
         m_radius = radius;
     }
 
+    void set_acceleration(const SpatialVector& value) {
+        m_current_frame_acceleration = value;
+    }
+    const SpatialVector& current_acceleration() const {
+        return m_current_frame_acceleration;
+    }
+    const SpatialVector& last_frame_acceleration() const {
+        return m_last_frame_acceleration;
+    }
+    SpatialVector delta_acceleration() const {
+        return m_last_frame_acceleration-m_current_frame_acceleration;
+    }
+
     const IParticleInteraction& interaction() const {return *m_interaction;}
     void set_interaction(std::unique_ptr<IParticleInteraction> interaction) {
         m_interaction = std::move(interaction);
@@ -136,6 +150,8 @@ private:
     std::vector<ChargeType> m_charges;
     DoubleBuffered<Vector2t> m_position = Vector2t(0, 0);
     DoubleBuffered<Vector2t> m_velocity = Vector2t(0, 0);
+    Vector2t m_current_frame_acceleration = Vector2t::zero();
+    Vector2t m_last_frame_acceleration = Vector2t::zero();
     QuantityType m_radius;
     QuantityType m_mass;
     int m_id;
